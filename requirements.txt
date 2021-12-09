@@ -1,0 +1,4 @@
+pyTelegramBotAPI
+python-dateutil
+beautifulsoup4
+requests

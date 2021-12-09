@@ -1,26 +1,39 @@
-from aiogram import types
-from config import bot, faculty, getGroupsByFaculty
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+import variables
+from telebot import types
 
-async def setKeyboard(message: types.Message, step):
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    b_back = KeyboardButton(text="⬅️ Назад")
-    b_group = KeyboardButton(text="Студент 🎓")
-    b_teacher = KeyboardButton(text="Викладач 💼")
 
-    match step:
-        case 1:
-            markup.row(b_teacher, b_group)            
-        case 2.1:
-            markup.add(b_back)
-            for b in faculty:
-               markup.add(KeyboardButton(text=b))
-        case 2.12:
-            markup.add(b_back)
-            groups = await getGroupsByFaculty(message.text)
-            for i in range(0, len(groups), 2):
-                if i == len(groups)-1:
-                    markup.add(KeyboardButton(text=groups[i]))
-                else:
-                    markup.row(KeyboardButton(text=groups[i]), KeyboardButton(text=groups[i+1]))
+def set_markup(id, n):
+    item_group = types.KeyboardButton(text="Група")
+    item_teacher = types.KeyboardButton(text="Викладач")
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    # Початкова клавіатура для вибору викладача або групи
+    if n == 1:
+        markup = types.ReplyKeyboardMarkup(
+            resize_keyboard=True, one_time_keyboard=True
+        ).add(item_teacher, item_group)
+        # markup.add(item_teacher, item_group)
+
+    # Клавіатура вибору збереженого викладача
+    elif n == 2.1:
+        if id in variables.user_teacher:
+            item_last_teacher = types.KeyboardButton(text=variables.user_teacher[id])
+            markup.add(item_last_teacher)
+        else:
+            markup = types.ReplyKeyboardRemove()
+
+    # Клавіатура вибору збереженої групи
+    elif n == 2.2:
+        if id in variables.user_group:
+            item_last_group = types.KeyboardButton(text=variables.user_group[id])
+            markup.add(item_last_group)
+        else:
+            markup = types.ReplyKeyboardRemove()
+
+    # Клавіатура для навігації
+    elif n == 3:
+        markup.row("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
+        markup.row("⬅️ тиждень", "сьогодні", "тиждень ➡️")
+        markup.row("Змінити запит", "Ввести дату")
+
     return markup
