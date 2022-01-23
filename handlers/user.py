@@ -30,7 +30,7 @@ async def text(message: types.Message):
             getFaculties()
             await FSMStudent.faculty.set()
             await message.answer(
-                "📑 Обери *факультет* зі списку або\n"
+                "🎟 Обери *факультет* зі списку або\n"
                 + "введи назву групи для пошуку 🔎",
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(None, 2.1),
@@ -55,27 +55,39 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
     elif message.text in faculty:
         await FSMStudent.next()
         await message.answer(
-            "📑 Обери *групу* зі списку або\n"
-            + "введи назву групи для пошуку 🔎",
+            "🎟 Обери *групу* зі списку:\n",
             parse_mode = "Markdown",
             reply_markup = await setKeyboard(message, 2.12),
         )
     else:
-        print("Заглушка для пошуку")
+        if await setKeyboard(message, 2.15):
+            await message.reply(
+                "🗂 Ось що я знайшов:",
+                reply_markup = await setKeyboard(message, 2.15),
+            )
+        else:
+            await message.reply(
+                "За цим запитом нічого не знайдено🧐\n\n"
+                + "❕ Вкажіть більш точні дані або\n"
+                + "🎟 використовуйте меню знизу:",
+                reply_markup = await setKeyboard(message, 2.1),
+            )
     print("Кінець 1 стану очікування")
 
 
 async def setStudentGroup(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
-        # await setStudentFaculty(message, state)
+        await state.finish()
+        await FSMStudent.faculty.set()
         await message.answer(
-            "📑 Обери *факультет* зі списку або\n"
+            "🎟 Обери *факультет* зі списку або\n"
             + "введи назву групи для пошуку 🔎",
             parse_mode = "Markdown",
             reply_markup = await setKeyboard(None, 2.1),
         )
-    print("Кінець 2 стану очікування")
-    await state.finish()
+    else:
+        await state.finish()
+        print("Кінець 2 стану очікування")
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(start, commands="start", chat_type=types.ChatType.PRIVATE)

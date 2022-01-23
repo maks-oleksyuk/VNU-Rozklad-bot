@@ -21,3 +21,20 @@ def getFaculties():
         if text["psrozklad_export"]["code"] == "0":
             with open("json/faculties.json", "w+") as f:
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
+
+
+async def searchGroup(query):
+    payload = {
+        "n": 701,
+        "lev": 142,
+        "query": query,
+    }
+    r = requests.get("http://194.44.187.20/cgi-bin/timetable.cgi", params=payload)
+    sr = []
+    try:
+        for x in json.loads(r.text)["suggestions"]:
+            sr.append(x)
+        sr.sort()
+        return sr
+    except ValueError:
+        return
