@@ -4,10 +4,13 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from request import getFaculties
 from keyboard import setKeyboard
+from message import answer, reply
 
 class FSMStudent(StatesGroup):
     faculty = State()
-    group = State()
+    group   = State()
+    search  = State()
+
 
 
 async def start(message: types.Message):
@@ -29,24 +32,14 @@ async def text(message: types.Message):
         case "Студент 🎓":
             getFaculties()
             await FSMStudent.faculty.set()
-            await message.answer(
-                "🎟 Обери *факультет* зі списку або\n"
-                + "введи назву групи для пошуку 🔎",
-                parse_mode = "Markdown",
-                reply_markup = await setKeyboard(None, 2.1),
-            )
-            
+            await answer(message, "faculty")
         case "Викладач 💼":
             print("Заглушка для викладача")
 
 
 async def cancelFSMStudent(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.answer(
-        "🦾 Обери для кого будемо формувати\n"
-        + "розклад використовуючи меню знизу:",
-        reply_markup = await setKeyboard(None, 1),
-    )
+    await answer(message, "choice")
 
 
 async def setStudentFaculty(message: types.Message, state: FSMContext):
@@ -54,24 +47,13 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
         await cancelFSMStudent(message, state)
     elif message.text in faculty:
         await FSMStudent.next()
-        await message.answer(
-            "🎟 Обери *групу* зі списку:\n",
-            parse_mode = "Markdown",
-            reply_markup = await setKeyboard(message, 2.12),
-        )
+        await answer(message, "group")
     else:
         if await setKeyboard(message, 2.15):
-            await message.reply(
-                "🗂 Ось що я знайшов:",
-                reply_markup = await setKeyboard(message, 2.15),
-            )
+            await FSMStudent.search.set()
+            await reply(message, "goodsearch")
         else:
-            await message.reply(
-                "За цим запитом нічого не знайдено🧐\n\n"
-                + "❕ Вкажіть більш точні дані або\n"
-                + "🎟 використовуйте меню знизу:",
-                reply_markup = await setKeyboard(message, 2.1),
-            )
+            await reply(message, "failsearch")
     print("Кінець 1 стану очікування")
 
 
@@ -79,15 +61,19 @@ async def setStudentGroup(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await state.finish()
         await FSMStudent.faculty.set()
-        await message.answer(
-            "🎟 Обери *факультет* зі списку або\n"
-            + "введи назву групи для пошуку 🔎",
-            parse_mode = "Markdown",
-            reply_markup = await setKeyboard(None, 2.1),
-        )
+        await answer(message, "faculty")
     else:
         await state.finish()
         print("Кінець 2 стану очікування")
+
+async def setGroupSearch(message: types.Message, state: FSMContext):
+    if message.text == "⬅️ Назад":
+        await state.finish()
+        await FSMStudent.faculty.set()
+        await answer(message, "faculty")
+    else:
+        print(message.text)
+        await state.finish()
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(start, commands="start", chat_type=types.ChatType.PRIVATE)
@@ -95,3 +81,5 @@ def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(text, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(setStudentFaculty, state=FSMStudent.faculty, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(setStudentGroup, state=FSMStudent.group, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setGroupSearch, state=FSMStudent.search, chat_type=types.ChatType.PRIVATE)
+
