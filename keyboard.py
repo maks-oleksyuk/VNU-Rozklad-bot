@@ -34,5 +34,14 @@ async def setKeyboard(message: types.Message, step):
                     else:
                         markup.row(KeyboardButton(text=res[i]), KeyboardButton(text=res[i+1]))
             else:
-                return            
+                return
+        case 2.16:
+            if len(await searchGroup(message.text)) == 1:
+                markup.row("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
+                markup.row("тиждень", "сьогодні", "тиждень")
+                markup.row("Змінити запит", "на тиждень", "Ввести дату")
+            elif(len(await searchGroup(message.text)) > 1):
+                markup = await setKeyboard(message, 2.15)
+            else:
+                return     
     return markup

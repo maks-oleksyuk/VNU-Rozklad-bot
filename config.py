@@ -15,7 +15,7 @@ faculty = []
 
 async def onStart(_):
     print("Bot Started")
-    getFaculties()
+    await getFaculties()
     with open("json/faculties.json") as f:
         text = json.loads(f.read())
         for d in text["psrozklad_export"]["departments"]:

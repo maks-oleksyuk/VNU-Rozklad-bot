@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-def getFaculties():
+async def getFaculties():
     path = Path("json/faculties.json")
     if not path.exists() or datetime.now().day == 1:
         payload = {
