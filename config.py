@@ -31,3 +31,21 @@ async def getGroupsByFaculty(faculty):
                 for g in d["objects"]:
                     groups.append(g["name"])
                 return groups
+
+
+async def searchGroup(query):
+    search = []
+    if len(query) < 11:
+        with open("json/faculties.json") as f:
+            text = json.loads(f.read())
+            for d in text["psrozklad_export"]["departments"]:
+                for g in d["objects"]:
+                    if g["name"].lower().find(query.lower()) != -1:
+                        search.append(g["name"])
+            if len(search):
+                search.sort()
+                return search
+            else:
+                return []
+    else:
+        return []

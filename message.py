@@ -13,26 +13,26 @@ async def answer(message: types.Message, option):
                 + "розклад використовуючи меню знизу:\n\n"
                 + "❕Якщо меню недоступне натисни на *⌘*",
                 parse_mode = "Markdown",
-                reply_markup = await setKeyboard(None, 1),
+                reply_markup = await setKeyboard(None, "choice"),
             )
         case "choice":
             await message.answer(
                 "🦾 Обери для кого будемо формувати\n"
                 + "розклад використовуючи меню знизу:",
-                reply_markup = await setKeyboard(None, 1),
+                reply_markup = await setKeyboard(None, "choice"),
             )
         case "faculty":
             await message.answer(
-                "📋 Обери *факультет* зі списку або\n"
+                "*☰* Обери *факультет* зі списку або\n"
                 + "введи назву групи для пошуку 🔎",
                 parse_mode = "Markdown",
-                reply_markup = await setKeyboard(None, 2.1),
+                reply_markup = await setKeyboard(None, "faculty"),
             )
         case "group":
             await message.answer(
-            "📋 Обери *групу* зі списку:\n",
+            "*☶* Обери *групу* зі списку:\n",
             parse_mode = "Markdown",
-            reply_markup = await setKeyboard(message, 2.12),
+            reply_markup = await setKeyboard(message, "group"),
         )
 
 async def reply(message: types.Message, option):
@@ -40,14 +40,14 @@ async def reply(message: types.Message, option):
         case "goodsearch":
             await message.reply(
                 "🗂 Ось що я знайшов:",
-                reply_markup = await setKeyboard(message, 2.15),
+                reply_markup = await setKeyboard(message, "search"),
             )
         case "failsearch":
             await message.reply(
                 "За цим запитом нічого не знайдено🧐\n\n"
-                + "❕ Вкажіть більш точні дані або\n"
-                + "📋 використовуйте меню знизу:",
-                reply_markup = await setKeyboard(message, 2.1),
+                + "⁉️ Вкажіть більш точні дані або\n"
+                + " ☰  використовуйте меню знизу:",
+                reply_markup = await setKeyboard(message, "faculty"),
             )
 
     

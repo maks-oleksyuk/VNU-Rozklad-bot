@@ -1,8 +1,8 @@
-from config import bot, dp, faculty
+from config import bot, dp, faculty, searchGroup
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from request import getFaculties, searchGroup
+from request import getFaculties
 from keyboard import setKeyboard
 from message import answer, reply
 
@@ -38,11 +38,7 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
         await FSMStudent.next()
         await answer(message, "group")
     else:
-        if await searchGroup(message.text):
-            await FSMStudent.search.set()
-            await reply(message, "goodsearch")
-        else:
-            await reply(message, "failsearch")
+        await setGroupSearch(message, state)
 
 
 async def setStudentGroup(message: types.Message, state: FSMContext):
@@ -54,22 +50,22 @@ async def setStudentGroup(message: types.Message, state: FSMContext):
         await setGroupSearch(message, state)
 
 async def setGroupSearch(message: types.Message, state: FSMContext):
-    l = len(await searchGroup(message.text))
     if message.text == "⬅️ Назад":
         await state.finish()
         await FSMStudent.faculty.set()
         await answer(message, "faculty")
-    elif l == 1:
-        await state.finish()
-        await message.answer(
-            "👋 РОЗКЛАД",
-            reply_markup = await setKeyboard(message, 2.16)
-        )
-    elif l > 1:
-        await reply(message, "goodsearch")
     else:
-        await reply(message, "failsearch")
-        # await state.finish()
+        l = len(await searchGroup(message.text))
+        if l == 1:
+            await state.finish()
+            await message.answer(
+                "👋 Функціонал у розробці",
+                reply_markup = await setKeyboard(message, "timetable")
+            )
+        elif l > 1:
+            await reply(message, "goodsearch")
+        else:
+            await reply(message, "failsearch")
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(start, commands="start", chat_type=types.ChatType.PRIVATE)
