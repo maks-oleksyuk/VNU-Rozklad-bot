@@ -21,3 +21,22 @@ async def getFaculties():
         if text["psrozklad_export"]["code"] == "0":
             with open("json/faculties.json", "w+") as f:
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
+
+
+async def getChair():
+    path = Path("json/chair.json")
+    if not path.exists() or datetime.now().day == 31:
+        payload = {
+            "req_type": "obj_list",
+            "req_mode": "teacher",
+            "req_format": "json",
+            "coding_mode": "UTF8",
+            "bs": "ok",
+        }
+        r = requests.get(
+            "http://194.44.187.20/cgi-bin/timetable_export.cgi", params=payload
+        )
+        text = json.loads(r.text)
+        if text["psrozklad_export"]["code"] == "0":
+            with open("json/chair.json", "w+") as f:
+                json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)

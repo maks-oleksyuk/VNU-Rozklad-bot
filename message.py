@@ -21,6 +21,13 @@ async def answer(message: types.Message, option):
                 + "розклад використовуючи меню знизу:",
                 reply_markup = await setKeyboard(None, "choice"),
             )
+        case "chair":
+            await message.answer(
+                "*☰* Обери *кафедру* зі списку або\n"
+                + "введи прізвище для пошуку 🔎",
+                parse_mode = "Markdown",
+                reply_markup = await setKeyboard(None, "chair"),
+            )
         case "faculty":
             await message.answer(
                 "*☰* Обери *факультет* зі списку або\n"
@@ -28,12 +35,18 @@ async def answer(message: types.Message, option):
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(None, "faculty"),
             )
+        case "surname":
+            await message.answer(
+                "*☰* Обери *викладача* зі списку:\n",
+                parse_mode = "Markdown",
+                reply_markup = await setKeyboard(message, "surname"),
+            )
         case "group":
             await message.answer(
-            "*☶* Обери *групу* зі списку:\n",
-            parse_mode = "Markdown",
-            reply_markup = await setKeyboard(message, "group"),
-        )
+                "*☶* Обери *групу* зі списку:\n",
+                parse_mode = "Markdown",
+                reply_markup = await setKeyboard(message, "group"),
+            )
 
 async def reply(message: types.Message, option):
     match option:
