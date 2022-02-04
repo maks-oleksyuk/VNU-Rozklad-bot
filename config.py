@@ -69,20 +69,21 @@ async def searchGroup(query):
         return []
 
 
-# TODO REBILD to teacher
 async def searchTeacher(query):
     search = []
-    if len(query) < 11:
-        with open("json/faculties.json") as f:
-            text = json.loads(f.read())
-            for d in text["psrozklad_export"]["departments"]:
-                for g in d["objects"]:
-                    if g["name"].lower().find(query.lower()) != -1:
-                        search.append(g["name"])
-            if len(search):
-                search.sort()
-                return search
-            else:
-                return []
-    else:
-        return []
+    # if len(query) < 11:
+    with open("json/chair.json") as f:
+        text = json.loads(f.read())
+        for d in text["psrozklad_export"]["departments"]:
+            for t in d["objects"]:
+                i = t["P"] + " " + t["I"] + " " + t["B"]
+                if i.lower().find(query.lower()) != -1:
+                    search.append(i)
+                    print(i)
+        if len(search):
+            search.sort()
+            return search
+        else:
+            return []
+    # else:
+    # return []

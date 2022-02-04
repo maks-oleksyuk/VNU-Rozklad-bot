@@ -1,5 +1,5 @@
 from aiogram import types
-from config import searchGroup
+from config import searchGroup, searchTeacher
 from config import bot, faculty, chair, getGroupsByFaculty, getTeachersByChair
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
@@ -33,7 +33,7 @@ async def setKeyboard(message: types.Message, step):
             teachers = await getTeachersByChair(message.text)
             for i in teachers:
                 markup.add(KeyboardButton(text=i))
-        case "search":
+        case "searchGroup":
             markup.add(b_back)
             res = await searchGroup(message.text)
             for i  in range(0, len(res), 2):
@@ -41,6 +41,12 @@ async def setKeyboard(message: types.Message, step):
                     markup.add(KeyboardButton(text=res[i]))
                 else:
                     markup.row(KeyboardButton(text=res[i]), KeyboardButton(text=res[i+1]))
+        case "searchTeacher":
+            markup.add(b_back)
+            res = await searchTeacher(message.text)
+            for i in res:
+                markup.add(KeyboardButton(text=i))
+        
         case "timetable":
             markup.row("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
             markup.row("⬅️ тиждень", "сьогодні", "тиждень ➡️")

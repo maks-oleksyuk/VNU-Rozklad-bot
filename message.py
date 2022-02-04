@@ -50,17 +50,28 @@ async def answer(message: types.Message, option):
 
 async def reply(message: types.Message, option):
     match option:
-        case "goodsearch":
+        case "goodsearchGroup":
             await message.reply(
                 "🗂 Ось що я знайшов:",
-                reply_markup = await setKeyboard(message, "search"),
+                reply_markup = await setKeyboard(message, "searchGroup"),
             )
-        case "failsearch":
+        case "failsearchGroup":
             await message.reply(
                 "За цим запитом нічого не знайдено🧐\n\n"
                 + "⁉️ Вкажіть більш точні дані або\n"
                 + " ☰  використовуйте меню знизу:",
                 reply_markup = await setKeyboard(message, "faculty"),
             )
-
+        case "goodsearchTeacher":
+            await message.reply(
+                "🗂 Ось що я знайшов:",
+                reply_markup = await setKeyboard(message, "searchTeacher"),
+            )
+        case "failsearchTeacher":
+            await message.reply(
+                "За цим запитом нічого не знайдено🧐\n\n"
+                + "⁉️ Вкажіть більш точні дані або\n"
+                + " ☰  використовуйте меню знизу:",
+                reply_markup = await setKeyboard(message, "chair"),
+            )
     

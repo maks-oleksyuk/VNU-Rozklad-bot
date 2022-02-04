@@ -1,4 +1,4 @@
-from config import bot, dp, faculty, chair, searchGroup
+from config import bot, dp, faculty, chair, searchGroup, searchTeacher
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -72,9 +72,9 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
                 reply_markup = await setKeyboard(message, "timetable")
             )
         elif l > 1:
-            await reply(message, "goodsearch")
+            await reply(message, "goodsearchGroup")
         else:
-            await reply(message, "failsearch")
+            await reply(message, "failsearchGroup")
 
 
 # -----------------------------------------------------------
@@ -110,18 +110,18 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         await state.finish()
         await FSMTeaсher.chair.set()
         await answer(message, "chair")
-    # else:
-        # l = len(await searchGroup(message.text))
-        # if l == 1:
-        #     await state.finish()
-        #     await message.answer(
-        #         "👋 Функціонал у розробці",
-        #         reply_markup = await setKeyboard(message, "timetable")
-        #     )
-        # elif l > 1:
-        #     await reply(message, "goodsearch")
-        # else:
-        #     await reply(message, "failsearch")
+    else:
+        l = len(await searchTeacher(message.text))
+        if l == 1:
+            await state.finish()
+            await message.answer(
+                "👋 Функціонал у розробці",
+                reply_markup = await setKeyboard(message, "timetable")
+            )
+        elif l > 1:
+            await reply(message, "goodsearchTeacher")
+        else:
+            await reply(message, "failsearchTeacher")
 
 
 # -----------------------------------------------------------

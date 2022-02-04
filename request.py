@@ -25,7 +25,7 @@ async def getFaculties():
 
 async def getChair():
     path = Path("json/chair.json")
-    if not path.exists() or datetime.now().day == 31:
+    if not path.exists() or datetime.now().day == 4:
         payload = {
             "req_type": "obj_list",
             "req_mode": "teacher",
@@ -38,21 +38,14 @@ async def getChair():
         )
         text = json.loads(r.text)
         index = []
-        for d in range(len(text["psrozklad_export"]["departments"]) - 1, -1, -1):
-            for g in range(
-                len(text["psrozklad_export"]["departments"][d]["objects"]) - 1, -1, -1
-            ):
-                n = text["psrozklad_export"]["departments"][d]["objects"][g]["name"]
-                if (
-                    n.find("Інфекціоніст") != -1
-                    or n.find("Онколог") != -1
-                    or n.find("Психіатр") != -1
-                    or n.find("Фтизіатр") != -1
-                    or n.find("Резерв") != -1
-                    or n.find("Вакансія") != -1
-                ):
+        for d in range(len(text["psrozklad_export"]["departments"])):
+            for g in range(len(text["psrozklad_export"]["departments"][d]["objects"])):
+                n = text["psrozklad_export"]["departments"][d]["objects"][g]
+                if n["name"].find("....") != -1 or n["name"].find("Вакансія") != -1:
                     index.append([d, g])
-        for i in index:
+                if n["B"].find(".") != -1:
+                    n["B"] = ""
+        for i in reversed(index):
             del text["psrozklad_export"]["departments"][i[0]]["objects"][i[1]]
         if text["psrozklad_export"]["code"] == "0":
             with open("json/chair.json", "w+") as f:
