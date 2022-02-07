@@ -25,7 +25,7 @@ async def getFaculties():
 
 async def getChair():
     path = Path("json/chair.json")
-    if not path.exists() or datetime.now().day == 4:
+    if not path.exists() or datetime.now().day == 31:
         payload = {
             "req_type": "obj_list",
             "req_mode": "teacher",

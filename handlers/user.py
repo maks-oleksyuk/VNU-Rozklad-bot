@@ -1,9 +1,11 @@
-from config import bot, dp, faculty, chair, searchGroup, searchTeacher
+from config import bot, dp
+from config import faculty, chair
+from config import searchGroup, searchTeacher
+from message import answer, reply
+from keyboard import setKeyboard
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from keyboard import setKeyboard
-from message import answer, reply
 
 # -----------------------------------------------------------
 # Implementation of basic handlers
@@ -42,6 +44,7 @@ class FSMStudent(StatesGroup):
 
 async def setStudentFaculty(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
+        await state.finish()
         await cancel(message, state)
     elif message.text in faculty:
         await FSMStudent.next()
@@ -49,18 +52,16 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
     else:
         await setGroupSearch(message, state)
 
-
 async def setStudentGroup(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
-        await state.finish()
         await FSMStudent.faculty.set()
         await answer(message, "faculty")
     else:
         await setGroupSearch(message, state)
 
 async def setGroupSearch(message: types.Message, state: FSMContext):
+    await FSMStudent.search.set()
     if message.text == "⬅️ Назад":
-        await state.finish()
         await FSMStudent.faculty.set()
         await answer(message, "faculty")
     else:
@@ -76,7 +77,6 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
         else:
             await reply(message, "failsearchGroup")
 
-
 # -----------------------------------------------------------
 # Implementation of the branch of development for the teacher
 # -----------------------------------------------------------
@@ -88,9 +88,9 @@ class FSMTeaсher(StatesGroup):
 
 async def setTeaсherChair(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
+        await state.finish()
         await cancel(message, state)
     elif message.text in chair:
-        await FSMTeaсher.next()
         await answer(message, "surname")
     else:
         await setTeacherSearch(message, state)
@@ -98,7 +98,6 @@ async def setTeaсherChair(message: types.Message, state: FSMContext):
 
 async def setTeacherSurname(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
-        await state.finish()
         await FSMTeaсher.chair.set()
         await answer(message, "chair")
     else:
@@ -106,8 +105,8 @@ async def setTeacherSurname(message: types.Message, state: FSMContext):
 
 
 async def setTeacherSearch(message: types.Message, state: FSMContext):
+    await FSMTeaсher.search.set()
     if message.text == "⬅️ Назад":
-        await state.finish()
         await FSMTeaсher.chair.set()
         await answer(message, "chair")
     else:
@@ -137,4 +136,6 @@ def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(setStudentGroup,   state = FSMStudent.group,   chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setTeacherSurname, state = FSMTeaсher.surname, chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setGroupSearch,    state = FSMStudent.search,  chat_type = types.ChatType.PRIVATE)
+    dp.register_message_handler(setTeacherSearch,  state = FSMTeaсher.search,  chat_type = types.ChatType.PRIVATE)
+
 
