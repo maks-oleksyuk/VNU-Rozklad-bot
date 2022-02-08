@@ -13,7 +13,6 @@ click==8.0.3
 colorama==0.4.3
 cryptography==2.8
 dbus-python==1.2.16
-defer==1.0.6
 distro==1.4.0
 distro-info===0.23ubuntu1
 entrypoints==0.3
