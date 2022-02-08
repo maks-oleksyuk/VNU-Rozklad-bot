@@ -6,7 +6,6 @@ attrs==21.4.0
 Babel==2.9.1
 black==21.12b0
 blinker==1.4
-Brlapi==0.7.0
 certifi==2021.10.8
 chardet==3.0.4
 charset-normalizer==2.0.10
