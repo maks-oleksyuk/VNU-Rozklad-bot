@@ -75,6 +75,7 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
         elif l > 1:
             await reply(message, "goodsearchGroup")
         else:
+            await FSMStudent.faculty.set()
             await reply(message, "failsearchGroup")
 
 # -----------------------------------------------------------
@@ -120,6 +121,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         elif l > 1:
             await reply(message, "goodsearchTeacher")
         else:
+            await FSMTeaсher.chair.set()
             await reply(message, "failsearchTeacher")
 
 
