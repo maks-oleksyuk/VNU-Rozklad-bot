@@ -50,6 +50,3 @@ SecretStorage==2.3.1
 simplejson==3.16.0
 six==1.14.0
 systemd-python==234
-tomli==1.2.3
-typing_extensions==4.0.1
-urllib3==1.26.8
