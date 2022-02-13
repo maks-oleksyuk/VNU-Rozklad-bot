@@ -1,8 +1,9 @@
-from config import bot, dp
+from config import bot, dp, base, cur
 from config import faculty, chair
 from config import searchGroup, searchTeacher
-from message import answer, reply
+from database import user_data
 from keyboard import setKeyboard
+from message import answer, reply
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -14,6 +15,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 # Implementation of the handler for command /start
 async def start(message: types.Message):
     await answer(message, "start")
+    await user_data(message, "start")
 
 
 # Implementation of a handler for text messages
@@ -92,6 +94,7 @@ async def setTeaсherChair(message: types.Message, state: FSMContext):
         await state.finish()
         await cancel(message, state)
     elif message.text in chair:
+        await FSMTeaсher.next()
         await answer(message, "surname")
     else:
         await setTeacherSearch(message, state)

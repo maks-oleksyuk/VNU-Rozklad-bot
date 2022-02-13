@@ -1,4 +1,5 @@
 import json
+import psycopg2 as ps
 from aiogram import Bot
 from decouple import config
 from request import getChair, getFaculties
@@ -7,6 +8,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 storage = MemoryStorage()
 
+base = ps.connect(config("DATABASE_URL"), sslmode="require")
+cur = base.cursor()
+
 bot = Bot(token=config("TOKEN", default=""))
 dp = Dispatcher(bot, storage=storage)
 
@@ -14,7 +18,7 @@ chair = []
 faculty = []
 
 
-async def onStart(_):
+async def on_startup(dp):
     print("Bot Started")
     await getChair()
     await getFaculties()
@@ -26,6 +30,11 @@ async def onStart(_):
         text = json.loads(f.read())
         for d in text["psrozklad_export"]["departments"]:
             faculty.append(d["name"])
+
+
+async def on_shutduwn(dp):
+    cur.close()
+    base.close()
 
 
 async def getGroupsByFaculty(faculty):

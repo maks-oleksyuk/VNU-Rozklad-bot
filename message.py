@@ -23,27 +23,27 @@ async def answer(message: types.Message, option):
             )
         case "chair":
             await message.answer(
-                "*☰* Обери *кафедру* зі списку або\n"
+                "📁 Обери *кафедру* зі списку або\n"
                 + "введи прізвище для пошуку 🔎",
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(None, "chair"),
             )
         case "faculty":
             await message.answer(
-                "*☰* Обери *факультет* зі списку або\n"
+                "📁 Обери *факультет* зі списку або\n"
                 + "введи назву групи для пошуку 🔎",
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(None, "faculty"),
             )
         case "surname":
             await message.answer(
-                "*☰* Обери *викладача* зі списку:\n",
+                "📂 Обери *викладача* зі списку:\n",
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(message, "surname"),
             )
         case "group":
             await message.answer(
-                "*☶* Обери *групу* зі списку:\n",
+                "📂 Обери *групу* зі списку:\n",
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(message, "group"),
             )
@@ -59,7 +59,7 @@ async def reply(message: types.Message, option):
             await message.reply(
                 "За цим запитом нічого не знайдено🧐\n\n"
                 + "⁉️ Вкажіть більш точні дані або\n"
-                + " ☰  використовуйте меню знизу:",
+                + "📁 використовуйте меню знизу:",
                 reply_markup = await setKeyboard(message, "faculty"),
             )
         case "goodsearchTeacher":
@@ -71,7 +71,7 @@ async def reply(message: types.Message, option):
             await message.reply(
                 "За цим запитом нічого не знайдено🧐\n\n"
                 + "⁉️ Вкажіть більш точні дані або\n"
-                + " ☰  використовуйте меню знизу:",
+                + "📁 використовуйте меню знизу:",
                 reply_markup = await setKeyboard(message, "chair"),
             )
     
