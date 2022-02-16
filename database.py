@@ -25,3 +25,14 @@ async def user_data(message: types.Message, option):
             cur.execute("UPDATE users SET name = %s, status = true, state = 'timetable', data = %s WHERE uid = %s", [name, data, uid])
 
     base.commit()
+
+
+async def timetable_data(message: types.Message, option):
+    name = message.text
+    match option:
+        case "have_timetable":
+            cur.execute("SELECT mon, tue, wed, thu, fri, sat, sun  FROM timetable WHERE name = %s", [name])
+            res = cur.fetchone()
+            return res
+            # if res: return True
+            # else: return

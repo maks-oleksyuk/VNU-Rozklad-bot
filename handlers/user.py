@@ -1,6 +1,7 @@
 from config import bot, dp, base, cur
 from config import faculty, chair
 from config import searchGroup, searchTeacher
+from timetable import timetable
 from database import user_data
 from keyboard import setKeyboard
 from message import answer, reply
@@ -77,6 +78,7 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
         if l == 1:
             await state.finish()
             await user_data(message, "data")
+            await timetable(message, "group")
             await message.answer(
                 "👋 Функціонал у розробці",
                 reply_markup = await setKeyboard(message, "timetable")

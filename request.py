@@ -1,7 +1,7 @@
 import json
 import requests
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 async def getFaculties():
@@ -50,3 +50,29 @@ async def getChair():
         if text["psrozklad_export"]["code"] == "0":
             with open("json/chair.json", "w+") as f:
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
+
+
+async def get_timetable(name, mode):
+    bdate = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime(
+        "%d.%m.%Y"
+    )
+    edate = (datetime.now() + timedelta(days=6 - datetime.now().weekday())).strftime(
+        "%d.%m.%Y"
+    )
+    name = name.encode("Windows 1251")
+    print(bdate, edate, mode, name)
+    payload = {
+        "req_type": "rozklad",
+        "req_mode": mode,
+        "OBJ_name": name,
+        "ros_text": "separated",
+        "show_empty": "yes",
+        "begin_date": bdate,
+        "end_date": edate,
+        "req_format": "json",
+        "coding_mode": "UTF8",
+        "bs": "ok",
+    }
+    r = requests.get(
+        "http://194.44.187.20/cgi-bin/timetable_export.cgi", params=payload
+    )
