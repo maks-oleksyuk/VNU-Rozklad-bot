@@ -27,7 +27,7 @@ async def user_data(message: types.Message, option):
     base.commit()
 
 
-async def timetable_data(message: types.Message, option):
+async def schedule_data(message: types.Message, option, data):
     name = message.text
     match option:
         case "have_timetable":

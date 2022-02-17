@@ -52,7 +52,7 @@ async def getChair():
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
 
 
-async def get_timetable(name, mode):
+async def get_schedule(name, mode):
     bdate = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime(
         "%d.%m.%Y"
     )
@@ -60,7 +60,6 @@ async def get_timetable(name, mode):
         "%d.%m.%Y"
     )
     name = name.encode("Windows 1251")
-    print(bdate, edate, mode, name)
     payload = {
         "req_type": "rozklad",
         "req_mode": mode,
@@ -76,3 +75,5 @@ async def get_timetable(name, mode):
     r = requests.get(
         "http://194.44.187.20/cgi-bin/timetable_export.cgi", params=payload
     )
+    text = json.loads(r.text)
+    return text
