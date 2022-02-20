@@ -17,6 +17,8 @@ dp = Dispatcher(bot, storage=storage)
 chair = []
 faculty = []
 
+week = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"]
+
 
 async def on_startup(dp):
     print("Bot Started")
@@ -67,6 +69,8 @@ async def searchGroup(query):
             text = json.loads(f.read())
             for d in text["psrozklad_export"]["departments"]:
                 for g in d["objects"]:
+                    if g["name"].lower() == query.lower():
+                        return [g["name"]]
                     if g["name"].lower().find(query.lower()) != -1:
                         search.append(g["name"])
             if len(search):
