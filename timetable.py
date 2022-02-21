@@ -11,62 +11,105 @@ async def schedule(message: types.Message, mode):
     # print("yes")
     # else:
     if mode == "group":
-        ttype = "🎓 *Розклад групи __"
+        ttype = "🎓 *Розклад групи `"
     if mode == "teacher":
         ttype = "🎓 *Розклад викладача __"
     ttable = []
     res = await get_schedule(message.text, mode)
     if res["psrozklad_export"]["code"] == "0":
-        if res["psrozklad_export"]["roz_items"][0]["object"]:
+        try:
             name = (
                 res["psrozklad_export"]["roz_items"][0]["object"]
                 .replace("-", "\-")
                 .replace("(", "\(")
                 .replace(")", "\)")
             )
-        else:
+        except IndexError:
             name = message.text.replace("-", "\-").replace("(", "\(").replace(")", "\)")
-        for d in range(6):
+        for d in range(7):
             cd = (
                 datetime.now() - timedelta(days=datetime.now().weekday() - d)
             ).strftime("%d.%m.%Y")
-            title = []
-            title = (
+            item = []
+            item = (
                 ttype
                 + name
-                + "__\n🔹 на "
+                + "`\n🔹 на "
                 + cd.replace(".", "\.")
                 + " \("
                 + week[d]
-                + "\)*\n"
+                + "\)*"
             )
             for i in res["psrozklad_export"]["roz_items"]:
                 if i["date"] == cd and i["lesson_number"] != "0":
-                    title += (
-                        "\n🔅 _"
+                    item += (
+                        "\n\n🔅 _"
                         + i["lesson_number"]
                         + " Пара \("
                         + i["lesson_time"].replace("-", " \- ")
-                        + "\)_\n__*"
+                        + "\)_\n"
                     )
                     if i["reservation"]:
-                        title += i["reservation"] + "\n"
+                        item += "📌 __*" + i["reservation"] + "*__"
                     if i["replacement"]:
-                        title += (
-                            "‼️ "
+                        item += (
+                            "‼️ __*"
                             + i["replacement"]
                             .replace("!", "\!")
                             .replace(".", "\.")
                             .replace(":", "\:")
-                            + "‼️\n"
+                            + "*__ ‼️\n"
                         )
                     if i["title"]:
-                        title += (
-                            i["title"]
+                        item += (
+                            "📌 __*"
+                            + i["title"]
                             .replace("(", "\(")
                             .replace(")", "\)")
                             .replace("-", "\-")
-                            + " "
+                            .replace(".", "\.")
+                            + "*__"
                         )
-                    title += "\(" + i["type"] + "\)*__"
-            await message.answer(title, parse_mode="MarkdownV2")
+                    if i["teacher"] and i["type"]:
+                        item += (
+                            "  _\("
+                            + i["teacher"]
+                            .replace(".", "\.")
+                            .replace("-", "\-")
+                            .replace("(", "\(")
+                            .replace(")", "\)")
+                            + "  \|  "
+                            + i["type"]
+                            + "\)_"
+                        )
+                    elif i["teacher"]:
+                        item += (
+                            "  _\("
+                            + i["teacher"]
+                            .replace(".", "\.")
+                            .replace("-", "\-")
+                            .replace("(", "\(")
+                            .replace(")", "\)")
+                            + "\)_"
+                        )
+                    elif i["type"]:
+                        item += "  _\(" + i["type"] + "\)_"
+                    if i["room"] and i["group"]:
+                        item += (
+                            "\n👥 "
+                            + i["room"].replace("-", "\-").replace(".", "\.")
+                            + "  \|  "
+                            + i["group"]
+                            .replace(".", "\.")
+                            .replace("-", "\-")
+                            .replace("(", "\(")
+                            .replace(")", "\)")
+                            .replace("+", "\+")
+                        )
+                    elif i["room"]:
+                        item += "\n👥 " + i["room"].replace("-", "\-").replace(".", "\.")
+                    elif i["group"]:
+                        item += "\n👥 " + i["group"].replace(".", "\.").replace(
+                            "-", "\-"
+                        ).replace("(", "\(").replace(")", "\)").replace("+", "\+")
+            await message.answer(item, parse_mode="MarkdownV2")
