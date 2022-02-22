@@ -56,7 +56,7 @@ async def get_schedule(name, mode):
     bdate = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime(
         "%d.%m.%Y"
     )
-    edate = (datetime.now() + timedelta(days=6 - datetime.now().weekday())).strftime(
+    edate = (datetime.now() + timedelta(days=13 - datetime.now().weekday())).strftime(
         "%d.%m.%Y"
     )
     name = name.encode("Windows 1251")

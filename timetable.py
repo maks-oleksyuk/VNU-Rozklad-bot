@@ -6,14 +6,10 @@ from datetime import datetime, timedelta
 
 
 async def schedule(message: types.Message, mode):
-    # t = await schedule_data(message, "have_timetable")
-    # if t:
-    # print("yes")
-    # else:
     if mode == "group":
         ttype = "🎓 *Розклад групи `"
     if mode == "teacher":
-        ttype = "🎓 *Розклад викладача __"
+        ttype = "🎓 *Розклад викладача `"
     ttable = []
     res = await get_schedule(message.text, mode)
     if res["psrozklad_export"]["code"] == "0":
@@ -26,7 +22,7 @@ async def schedule(message: types.Message, mode):
             )
         except IndexError:
             name = message.text.replace("-", "\-").replace("(", "\(").replace(")", "\)")
-        for d in range(7):
+        for d in range(14):
             cd = (
                 datetime.now() - timedelta(days=datetime.now().weekday() - d)
             ).strftime("%d.%m.%Y")
@@ -40,8 +36,10 @@ async def schedule(message: types.Message, mode):
                 + week[d]
                 + "\)*"
             )
+            has_item = 0
             for i in res["psrozklad_export"]["roz_items"]:
                 if i["date"] == cd and i["lesson_number"] != "0":
+                    has_item = 1
                     item += (
                         "\n\n🔅 _"
                         + i["lesson_number"]
@@ -54,62 +52,50 @@ async def schedule(message: types.Message, mode):
                     if i["replacement"]:
                         item += (
                             "‼️ __*"
-                            + i["replacement"]
-                            .replace("!", "\!")
-                            .replace(".", "\.")
-                            .replace(":", "\:")
+                            + await multy_replase(i["replacement"])
                             + "*__ ‼️\n"
                         )
                     if i["title"]:
-                        item += (
-                            "📌 __*"
-                            + i["title"]
-                            .replace("(", "\(")
-                            .replace(")", "\)")
-                            .replace("-", "\-")
-                            .replace(".", "\.")
-                            + "*__"
-                        )
+                        item += "📕 __*" + await multy_replase(i["title"]) + "*__"
                     if i["teacher"] and i["type"]:
                         item += (
                             "  _\("
-                            + i["teacher"]
-                            .replace(".", "\.")
-                            .replace("-", "\-")
-                            .replace("(", "\(")
-                            .replace(")", "\)")
+                            + await multy_replase(i["teacher"])
                             + "  \|  "
                             + i["type"]
                             + "\)_"
                         )
                     elif i["teacher"]:
-                        item += (
-                            "  _\("
-                            + i["teacher"]
-                            .replace(".", "\.")
-                            .replace("-", "\-")
-                            .replace("(", "\(")
-                            .replace(")", "\)")
-                            + "\)_"
-                        )
+                        item += "  _\(" + await multy_replase(i["teacher"]) + "\)_"
                     elif i["type"]:
                         item += "  _\(" + i["type"] + "\)_"
                     if i["room"] and i["group"]:
                         item += (
                             "\n👥 "
-                            + i["room"].replace("-", "\-").replace(".", "\.")
+                            + await multy_replase(i["room"])
                             + "  \|  "
-                            + i["group"]
-                            .replace(".", "\.")
-                            .replace("-", "\-")
-                            .replace("(", "\(")
-                            .replace(")", "\)")
-                            .replace("+", "\+")
+                            + await multy_replase(i["group"])
                         )
                     elif i["room"]:
-                        item += "\n👥 " + i["room"].replace("-", "\-").replace(".", "\.")
+                        item += "\n👥 " + await multy_replase(i["room"])
                     elif i["group"]:
-                        item += "\n👥 " + i["group"].replace(".", "\.").replace(
-                            "-", "\-"
-                        ).replace("(", "\(").replace(")", "\)").replace("+", "\+")
+                        item += "\n👥 " + await multy_replase(i["group"])
+            if has_item == 0:
+                item += "\n\n🎉 *Вітаю\!* В тебе вихідний 😎"
+
             await message.answer(item, parse_mode="MarkdownV2")
+
+
+async def multy_replase(txt):
+    characters = {
+        ".": "\.",
+        ":": "\:",
+        "-": "\-",
+        "+": "\+",
+        "(": "\(",
+        ")": "\)",
+        "!": "\!",
+    }
+    transTable = txt.maketrans(characters)
+    txt = txt.translate(transTable)
+    return txt
