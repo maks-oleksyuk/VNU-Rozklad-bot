@@ -132,6 +132,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         if l == 1:
             await state.finish()
             await user_data(message, "data")
+            await schedule(message, "teacher")
             await message.answer(
                 "👋 Функціонал у розробці",
                 reply_markup = await setKeyboard(message, "timetable")
