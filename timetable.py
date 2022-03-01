@@ -28,9 +28,7 @@ async def schedule(message: types.Message, mode):
         except IndexError:
             name = message.text.replace("-", "\-").replace("(", "\(").replace(")", "\)")
         for d in range(14):
-            cd = (
-                datetime.now() - timedelta(days=datetime.now().weekday() - d)
-            ).strftime("%d.%m.%Y")
+            cd = (ND - timedelta(days=NW - d)).strftime("%d.%m.%Y")
             if d == 0 or d == 7:
                 start_date = (
                     (ND - timedelta(days=NW - d))
@@ -60,8 +58,14 @@ async def schedule(message: types.Message, mode):
                 if i["date"] == cd and i["lesson_number"] != "0":
                     if has_item != i["date"]:
                         has_item = i["date"]
-                        week_message += "\n\n🔅 _*" + week[d] + "*_"
-                    week_message = await add_subject_week(week_message, i)
+                        week_message += (
+                            "\n\n🔅 _*"
+                            + i["date"][:5].replace(".", "\.")
+                            + " "
+                            + week[d]
+                            + "*_"
+                        )
+                    week_message = await add_subject_week(week_message, i, mode)
                     item += (
                         "\n\n🔅 _"
                         + i["lesson_number"]
@@ -73,9 +77,9 @@ async def schedule(message: types.Message, mode):
                         item += "📌 __*" + i["reservation"] + "*__"
                     if i["replacement"]:
                         item += (
-                            "‼️ __*"
+                            "❗️ __*"
                             + await multy_replase(i["replacement"])
-                            + "*__ ‼️\n"
+                            + "*__ ❗️\n"
                         )
                     if i["title"]:
                         item += "📕 __*" + await multy_replase(i["title"]) + "*__"
@@ -104,18 +108,21 @@ async def schedule(message: types.Message, mode):
                         item += "\n👥 " + await multy_replase(i["group"])
             if has_item == 0:
                 item += "\n\n🎉 *Вітаю\!* В тебе вихідний 😎"
-
+    else:
+        week_message = "Данних не знайдено"
     await message.answer(week_message, parse_mode="MarkdownV2")
 
 
-async def add_subject_week(week_message, row):
+async def add_subject_week(week_message, row, mode):
     week_message += "\n *" + row["lesson_number"] + "\.* "
     if row["title"]:
         week_message += await multy_replase(row["title"])
     if row["reservation"]:
         week_message += await multy_replase(row["reservation"])
-    if await has_need_group(row["group"]):
-        week_message += " ___" + await multy_replase(row["group"]) + "_\r__"
+    if mode == "group" and await has_need_group(row["group"]):
+        week_message += " \| ___" + await multy_replase(row["group"]) + "_\r__"
+    if mode == "teacher":
+        week_message += " \| ___" + await multy_replase(row["group"]) + "_\r__"
     return week_message
 
 
@@ -134,6 +141,7 @@ async def has_need_group(txt):
 
 
 async def multy_replase(txt):
+    txt = txt.replace(" (за професійним спрямуванням)", "")
     characters = {
         ".": "\.",
         ":": "\:",

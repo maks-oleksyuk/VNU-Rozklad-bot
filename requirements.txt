@@ -1,11 +1,9 @@
 aiogram==2.18
 aiohttp==3.8.1
 aiosignal==1.2.0
-async-timeout==4.0.2
 pyTelegramBotAPI==4.3.1
 python-dateutil==2.7.3
 python-decouple==3.5
 psycopg2-binary==2.9.3
 requests==2.27.1
 simplejson==3.16.0
-python-dateutil==2.7.3
