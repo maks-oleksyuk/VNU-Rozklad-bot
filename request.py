@@ -5,11 +5,12 @@ from datetime import datetime, timedelta
 
 
 async def getFaculties():
-    path = Path("json/faculties.json")
+    path = Path("json/faculties.min.json")
     if not path.exists() or datetime.now().day == 31:
         payload = {
             "req_type": "obj_list",
             "req_mode": "group",
+            "show_ID": "yes",
             "req_format": "json",
             "coding_mode": "UTF8",
             "bs": "ok",
@@ -21,14 +22,17 @@ async def getFaculties():
         if text["psrozklad_export"]["code"] == "0":
             with open("json/faculties.json", "w+") as f:
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
+            with open("json/faculties.min.json", "w+") as f:
+                json.dump(text, f, ensure_ascii=False)
 
 
 async def getChair():
-    path = Path("json/chair.json")
+    path = Path("json/chair.min.json")
     if not path.exists() or datetime.now().day == 31:
         payload = {
             "req_type": "obj_list",
             "req_mode": "teacher",
+            "show_ID": "yes",
             "req_format": "json",
             "coding_mode": "UTF8",
             "bs": "ok",
@@ -50,24 +54,24 @@ async def getChair():
         if text["psrozklad_export"]["code"] == "0":
             with open("json/chair.json", "w+") as f:
                 json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
+            with open("json/chair.min.json", "w+") as f:
+                json.dump(text, f, ensure_ascii=False)
 
 
-async def get_schedule(name, mode):
-    bdate = (datetime.now() - timedelta(days=datetime.now().weekday())).strftime(
-        "%d.%m.%Y"
-    )
-    edate = (datetime.now() + timedelta(days=13 - datetime.now().weekday())).strftime(
-        "%d.%m.%Y"
-    )
-    name = name.encode("Windows 1251")
+async def get_schedule(id, mode):
+    ND = datetime.now()
+    NW = datetime.now().weekday()
+    begin_date = (ND - timedelta(days=NW)).strftime("%d.%m.%Y")
+    end_date = (ND + timedelta(days=13 - NW)).strftime("%d.%m.%Y")
+    # name = name.encode("Windows 1251")
     payload = {
         "req_type": "rozklad",
         "req_mode": mode,
-        "OBJ_name": name,
+        "OBJ_ID": id,
         "ros_text": "separated",
         "show_empty": "yes",
-        "begin_date": bdate,
-        "end_date": edate,
+        "begin_date": begin_date,
+        "end_date": end_date,
         "req_format": "json",
         "coding_mode": "UTF8",
         "bs": "ok",

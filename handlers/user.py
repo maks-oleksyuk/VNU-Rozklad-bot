@@ -1,10 +1,10 @@
-from config import bot, dp, base, cur
 from config import faculty, chair
-from config import searchGroup, searchTeacher
-from timetable import schedule
+from config import bot, dp, base, cur
+from config import search_group, search_teacher
+from message import answer, reply
 from database import user_data
 from keyboard import setKeyboard
-from message import answer, reply
+from timetable import schedule
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -74,16 +74,16 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
         await user_data(message, "faculty")
         await answer(message, "faculty")
     else:
-        l = len(await searchGroup(message.text))
-        if l == 1:
+        gr = await search_group(message.text)
+        if len(gr) == 1:
             await state.finish()
             await user_data(message, "data")
-            await schedule(message, "group")
+            await schedule(message, "group", gr[0])
             await message.answer(
                 "👋 Функціонал у розробці",
                 reply_markup = await setKeyboard(message, "timetable")
             )
-        elif l > 1:
+        elif len(gr) > 1:
             await user_data(message, "group")
             await reply(message, "goodsearchGroup")
         else:
@@ -128,16 +128,16 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         await user_data(message, "chair")
         await answer(message, "chair")
     else:
-        l = len(await searchTeacher(message.text))
-        if l == 1:
+        tr = await search_teacher(message.text)
+        if len(tr) == 1:
             await state.finish()
             await user_data(message, "data")
-            await schedule(message, "teacher")
+            await schedule(message, "teacher", tr[0])
             await message.answer(
                 "👋 Функціонал у розробці",
                 reply_markup = await setKeyboard(message, "timetable")
             )
-        elif l > 1:
+        elif len(tr) > 1:
             await user_data(message, "surname")
             await reply(message, "goodsearchTeacher")
         else:

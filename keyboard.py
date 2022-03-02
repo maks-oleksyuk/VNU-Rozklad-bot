@@ -1,6 +1,6 @@
 from aiogram import types
-from config import searchGroup, searchTeacher
-from config import bot, faculty, chair, getGroupsByFaculty, getTeachersByChair
+from config import search_group, search_teacher
+from config import bot, faculty, chair, get_groups_by_faculty, get_teachers_by_chair
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 async def setKeyboard(message: types.Message, step):
@@ -22,7 +22,7 @@ async def setKeyboard(message: types.Message, step):
                markup.add(KeyboardButton(text=b))           
         case "group":
             markup.add(b_back)
-            groups = await getGroupsByFaculty(message.text)
+            groups = await get_groups_by_faculty(message.text)
             for i in range(0, len(groups), 2):
                 if i == len(groups)-1:
                     markup.add(KeyboardButton(text=groups[i]))
@@ -30,12 +30,12 @@ async def setKeyboard(message: types.Message, step):
                     markup.row(KeyboardButton(text=groups[i]), KeyboardButton(text=groups[i+1]))
         case "surname":
             markup.add(b_back)
-            teachers = await getTeachersByChair(message.text)
+            teachers = await get_teachers_by_chair(message.text)
             for i in teachers:
                 markup.add(KeyboardButton(text=i))
         case "searchGroup":
             markup.add(b_back)
-            res = await searchGroup(message.text)
+            res = await search_group(message.text)
             for i  in range(0, len(res), 2):
                 if i == len(res)-1:
                     markup.add(KeyboardButton(text=res[i]))
@@ -43,7 +43,7 @@ async def setKeyboard(message: types.Message, step):
                     markup.row(KeyboardButton(text=res[i]), KeyboardButton(text=res[i+1]))
         case "searchTeacher":
             markup.add(b_back)
-            res = await searchTeacher(message.text)
+            res = await search_teacher(message.text)
             for i in res:
                 markup.add(KeyboardButton(text=i))
         

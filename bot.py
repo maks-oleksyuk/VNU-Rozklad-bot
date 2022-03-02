@@ -1,4 +1,5 @@
-from config import dp, on_startup, on_shutduwn
+from config import dp
+from config import on_startup, on_shutduwn
 from aiogram.utils import executor
 
 from handlers import user
