@@ -1,3 +1,4 @@
+from traceback import print_list
 from config import week
 from config import get_group_id
 from config import get_teacher_id
@@ -10,21 +11,27 @@ from datetime import datetime, timedelta
 async def schedule(message: types.Message, mode, name):
     ND = datetime.now()
     NW = datetime.now().weekday()
+    SD = (ND - timedelta(days=NW)).strftime("%d.%m.%Y")
+    ED = (ND - timedelta(days=NW - 13)).strftime("%d.%m.%Y")
+    schedule_arr = []
     if mode == "group":
         id = await get_group_id(name)
         ttype = "🎓 *Розклад групи `" + id[1]
     if mode == "teacher":
         id = await get_teacher_id(name)
         ttype = "💼 *Розклад викладача `" + id[1]
-    ttable = []
+    schedule_arr += id + [mode, SD, ED]
     res = await get_schedule(id[0], mode)
-    if res["psrozklad_export"]["code"] == "0":
+    if (
+        res["psrozklad_export"]["code"] == "0"
+        and len(res["psrozklad_export"]["roz_items"]) != 0
+    ):
+        schedule_arr.append(True)
         for d in range(14):
             cd = (ND - timedelta(days=NW - d)).strftime("%d.%m.%Y")
             if d == 0 or d == 7:
-                start_date = (ND - timedelta(days=NW - d)).strftime("%d.%m.%y")
                 end_date = (ND - timedelta(days=NW - d - 6)).strftime("%d.%m.%y")
-                week_message = ttype + "`\n🔹 з " + start_date + " по " + end_date + "*"
+                week_message = ttype + "`\n🔹 з " + cd + " по " + end_date + "*"
             item = []
             item = ttype + "`\n🔹 на " + cd + " (" + week[d] + ")*"
             lsn = 0
@@ -44,9 +51,7 @@ async def schedule(message: types.Message, mode, name):
                             "\n\n🔅 _"
                             + i["lesson_number"]
                             + " Пара ("
-                            + i["lesson_time"][:5]
-                            + " - "
-                            + i["lesson_time"][6:]
+                            + i["lesson_time"].replace("-", " - ")
                             + ")_\n"
                         )
                         week_message += "\n *" + i["lesson_number"] + ". *"
@@ -78,21 +83,20 @@ async def schedule(message: types.Message, mode, name):
             if has_item == 0:
                 item += "\n\n🎉 *Вітаю!* В тебе вихідний 😎"
             item = await multy_replase(item)
-            await message.answer(item, parse_mode="MarkdownV2")
+            schedule_arr.append(item)
+            if d == 6 or d == 13:
+                week_message = await multy_replase(week_message)
+                schedule_arr.append(week_message)
     else:
-        week_message = "Данних не знайдено"
-    week_message = await multy_replase(week_message)
-    await message.answer(week_message, parse_mode="MarkdownV2")
+        schedule_arr.append(False)
+    await schedule_data(message, "save", schedule_arr)
 
 
 async def has_need_group(txt):
     if (
-        txt.find("част. групи") != -1
-        or txt.find("підгр.") != -1
-        or txt.find("4.1") != -1
-        or txt.find("4.2") != -1
-        or txt.find("4.3") != -1
-        or txt.find("4.4") != -1
+        txt.find("підгр.") != -1
+        or txt.find("част. групи") != -1
+        or txt.find("Збірна група") != -1
     ):
         return True
     else:
