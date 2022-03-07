@@ -18,7 +18,7 @@ async def schedule(message: types.Message, mode, id):
         ttype = "💼 *Розклад викладача `" + id[1]
 
     schedule_arr = [id[0], id[1], mode, SD, ED]
-    res = await get_schedule(id[0], mode, None, None)
+    res = await get_schedule(id[0], mode, None)
 
     if (
         res["psrozklad_export"]["code"] == "0"
@@ -99,6 +99,68 @@ async def schedule(message: types.Message, mode, id):
         await schedule_data(message, "update", schedule_arr)
     elif not schedule_arr[5] and res[6] and SD < res[5] and SD > res[4]:
         await schedule_data(message, "week_update", schedule_arr)
+
+
+async def schedule_for_the_date(message: types.Message, mode, tid, date):
+    res = await get_schedule(tid[0], mode, date)
+    if mode == "group":
+        ttype = "🎓 *Розклад групи `" + tid[1]
+    if mode == "teacher":
+        ttype = "💼 *Розклад викладача `" + tid[1]
+    mes = (
+        ttype
+        + "`\n🔹 на "
+        + date.strftime("%d.%m.%Y")
+        + " ("
+        + week[date.weekday()]
+        + ")*"
+    )
+    if (
+        res["psrozklad_export"]["code"] == "0"
+        and len(res["psrozklad_export"]["roz_items"]) != 0
+    ):
+        lsn = 0
+        for i in res["psrozklad_export"]["roz_items"]:
+            if i["date"] == date.strftime("%d.%m.%Y") and i["lesson_number"] != "0":
+                mes = await add_lesson(mes, i, lsn)
+                lsn = i["lesson_number"]
+
+    else:
+        mes += "\n\n🔺 Даних не знайдено!"
+    mes = await multy_replase(mes)
+    return mes
+
+
+async def add_lesson(mes, ls, lsn):
+    if lsn == ls["lesson_number"]:
+        mes += "\n"
+    else:
+        mes += (
+            "\n\n🔅 _"
+            + ls["lesson_number"]
+            + " Пара ("
+            + ls["lesson_time"].replace("-", " - ")
+            + ")_\n"
+        )
+    if ls["reservation"]:
+        mes += "📌 __*" + ls["reservation"] + "*__"
+    if ls["replacement"]:
+        mes += "❗️ __*" + ls["replacement"] + "*__❗️\n"
+    if ls["title"]:
+        mes += "📕 __*" + ls["title"] + "*__"
+    if ls["teacher"] and ls["type"]:
+        mes += "  _(" + ls["teacher"] + "  |  " + ls["type"] + ")_"
+    elif ls["teacher"]:
+        mes += "  _(" + ls["teacher"] + ")_"
+    elif ls["type"]:
+        mes += "  _(" + ls["type"] + ")_"
+    if ls["room"] and ls["group"]:
+        mes += "\n👥 " + ls["room"] + "  |  " + ls["group"]
+    elif ls["room"]:
+        mes += "\n👥 " + ls["room"]
+    elif ls["group"]:
+        mes += "\n👥 " + ls["group"]
+    return mes
 
 
 async def has_need_group(txt):

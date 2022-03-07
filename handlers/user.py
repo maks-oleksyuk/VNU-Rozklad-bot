@@ -35,7 +35,11 @@ async def text(message: types.Message):
             await schedule_commands.week(message)
         case "Пн" | "Вт" | "Ср" | "Чт" | "Пт" | "Сб" | "Нд" | "🔘":
             await schedule_commands.get_day_timetable(message, None)
-            
+        case "⬅️ тиждень":
+            await schedule_commands.changeweek(message, "prev")
+        case "тиждень ➡️":
+            await schedule_commands.changeweek(message, "next")
+
 # Implementation of the handler for command /cancel
 async def cancel(message: types.Message, state: FSMContext):
     await state.finish()

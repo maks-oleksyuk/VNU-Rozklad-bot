@@ -1,7 +1,7 @@
 from config import get_column
 from message import answer
 from database import schedule_data, user_data
-from timetable import schedule
+from timetable import schedule, schedule_for_the_date
 from datetime import date, timedelta
 from aiogram import Dispatcher, types
 
@@ -55,6 +55,20 @@ async def nextweek(message: types.Message):
         await answer(message, "data", mes[0])
 
 
+async def changeweek(message: types.Message, type):
+    id = await user_data(message, "get_data_id", None)
+    if not id[0]:
+        await answer(message, "not_data")
+    else:
+        if type == "next":
+            SD = id[3] + timedelta(weeks=1)
+        elif type == "prev":
+            SD = id[3] - timedelta(weeks=1)
+    message.text = "🔘"
+    await user_data(message, "data", [id[0], id[1], id[2], SD])
+    await get_day_timetable(message, SD)
+
+
 async def get_day_timetable(message: types.Message, date):
     id = await user_data(message, "get_data_id", None)
     if not id[0]:
@@ -78,14 +92,16 @@ async def get_day_timetable(message: types.Message, date):
         res = await schedule_data(None, "get_date", id[0])
         if SD >= res[0] and SD <= res[1]:
             await user_data(message, "data", [id[0], id[1], id[2], SD])
-            if SD - res[0] > timedelta(days=6):
+            if SD - res[0] < timedelta(days=6):
                 col = await get_column(days[text], 0, 0)
             else:
                 col = await get_column(days[text], 0, 1)
             mes = await schedule_data(message, "get_col", [col, id[0]])
             await answer(message, "data", mes[0])
         else:
-            print("not data")
+            mes = await schedule_for_the_date(message, id[2], [id[0], id[1]], SD)
+            await user_data(message, "data", [id[0], id[1], id[2], SD])
+            await answer(message, "data", mes)
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):
