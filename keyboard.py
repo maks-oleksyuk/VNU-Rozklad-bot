@@ -1,4 +1,6 @@
 from aiogram import types
+from database import user_data
+from datetime import date
 from config import search_group, search_teacher
 from config import bot, faculty, chair, get_groups_by_faculty, get_teachers_by_chair
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
@@ -46,9 +48,11 @@ async def setKeyboard(message: types.Message, step):
             res = await search_teacher(message.text)
             for i in res:
                 markup.add(KeyboardButton(text=i))
-        
         case "timetable":
-            markup.row("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
+            days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
+            res = await user_data(message, "get_data_id", None)
+            days[res[3].weekday()] = "🔘"
+            markup.row(days[0], days[1], days[2], days[3], days[4], days[5], days[6])
             markup.row("⬅️ тиждень", "сьогодні", "тиждень ➡️")
             markup.row("Нагадування ⏰", "На тиждень", "📆 Ввести дату")
     return markup

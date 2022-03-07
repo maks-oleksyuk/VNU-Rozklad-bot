@@ -50,7 +50,7 @@ async def answer(message: types.Message, option, data):
         case "data":
             await message.answer(
                 data, parse_mode="MarkdownV2",
-                reply_markup = await setKeyboard(None, "timetable"))
+                reply_markup = await setKeyboard(message, "timetable"))
 
         case "not_data":
             await message.answer(

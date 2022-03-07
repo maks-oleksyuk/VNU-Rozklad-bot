@@ -23,7 +23,7 @@ async def user_data(message: types.Message, option, data):
                             data_date = %s
                             WHERE uid = %s""", data)
         case "get_data_id":
-            cur.execute("SELECT data_id, data_name, data_type FROM users WHERE uid = %s", [uid])
+            cur.execute("SELECT data_id, data_name, data_type, data_date FROM users WHERE uid = %s", [uid])
             res = cur.fetchone()
             return res
 
@@ -92,6 +92,10 @@ async def schedule_data(message: types.Message, option, data):
             """, [data[3], data[4], data[0]])
         case "get_col":
             cur.execute("SELECT " + data[0] + " FROM timetable WHERE tid = %s", [data[1]])
+            res = cur.fetchone()
+            return res
+        case "get_date":
+            cur.execute("SELECT S_date, e_date FROM timetable WHERE tid = %s", [data])
             res = cur.fetchone()
             return res
     base.commit()

@@ -57,7 +57,7 @@ async def schedule(message: types.Message, mode, id):
                         item += "📌 __*" + i["reservation"] + "*__"
                         week_message += i["reservation"]
                     if i["replacement"]:
-                        item += "❗️ __*" + i["replacement"] + "*__ ❗️\n"
+                        item += "❗️ __*" + i["replacement"] + "*__❗️\n"
                     if i["title"]:
                         item += "📕 __*" + i["title"] + "*__"
                         week_message += i["title"]

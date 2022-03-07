@@ -29,8 +29,13 @@ async def text(message: types.Message):
         case "Викладач 💼":
             await FSMTeaсher.chair.set()
             await answer(message, "chair", None)
-
-
+        case "сьогодні":
+            await schedule_commands.today(message)
+        case "На тиждень":
+            await schedule_commands.week(message)
+        case "Пн" | "Вт" | "Ср" | "Чт" | "Пт" | "Сб" | "Нд" | "🔘":
+            await schedule_commands.get_day_timetable(message, None)
+            
 # Implementation of the handler for command /cancel
 async def cancel(message: types.Message, state: FSMContext):
     await state.finish()
