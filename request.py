@@ -58,12 +58,11 @@ async def getChair():
                 json.dump(text, f, ensure_ascii=False)
 
 
-async def get_schedule(id, mode):
+async def get_schedule(id, mode, sdate, edate):
     ND = datetime.now()
     NW = datetime.now().weekday()
     begin_date = (ND - timedelta(days=NW)).strftime("%d.%m.%Y")
     end_date = (ND + timedelta(days=13 - NW)).strftime("%d.%m.%Y")
-    # name = name.encode("Windows 1251")
     payload = {
         "req_type": "rozklad",
         "req_mode": mode,

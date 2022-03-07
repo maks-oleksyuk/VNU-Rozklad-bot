@@ -3,7 +3,9 @@ from config import on_startup, on_shutduwn
 from aiogram.utils import executor
 
 from handlers import user
+from handlers import schedule_commands
 
+schedule_commands.register_handlers_schedule_commands(dp)
 user.register_handlers_user(dp)
 
 

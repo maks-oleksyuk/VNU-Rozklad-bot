@@ -127,3 +127,24 @@ async def get_teacher_id(query):
                 i = t["P"] + " " + t["I"] + " " + t["B"]
                 if i.lower() == query.lower():
                     return [t["ID"], t["name"]]
+
+
+async def get_column(weekday, week, next):
+    col = ""
+    colums = [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun",
+        "week",
+    ]
+    if weekday != None:
+        col = colums[weekday]
+    if week:
+        col = colums[-1]
+    if next:
+        col = "n_" + col
+    return col

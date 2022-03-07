@@ -1,7 +1,7 @@
 from aiogram import types
 from keyboard import setKeyboard
 
-async def answer(message: types.Message, option):
+async def answer(message: types.Message, option, data):
     match option:
         case "start":
             await message.answer(
@@ -47,6 +47,15 @@ async def answer(message: types.Message, option):
                 parse_mode = "Markdown",
                 reply_markup = await setKeyboard(message, "group"),
             )
+        case "data":
+            await message.answer(
+                data, parse_mode="MarkdownV2",
+                reply_markup = await setKeyboard(None, "timetable"))
+
+        case "not_data":
+            await message.answer(
+                "🌀 Обери для кого будемо формувати розклад",
+                reply_markup = await setKeyboard(None, "choice"))
 
 async def reply(message: types.Message, option):
     match option:

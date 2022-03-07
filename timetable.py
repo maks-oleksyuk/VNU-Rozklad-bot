@@ -1,27 +1,25 @@
-from traceback import print_list
 from config import week
-from config import get_group_id
-from config import get_teacher_id
 from aiogram import types
 from request import get_schedule
 from database import schedule_data
-from datetime import datetime, timedelta
+from datetime import timedelta, date
 
 
-async def schedule(message: types.Message, mode, name):
-    ND = datetime.now()
-    NW = datetime.now().weekday()
-    SD = (ND - timedelta(days=NW)).strftime("%d.%m.%Y")
-    ED = (ND - timedelta(days=NW - 13)).strftime("%d.%m.%Y")
-    schedule_arr = []
+async def schedule(message: types.Message, mode, id):
+
+    ND = date.today()
+    NW = date.today().weekday()
+    SD = ND - timedelta(days=NW)
+    ED = ND - timedelta(days=NW - 13)
+
     if mode == "group":
-        id = await get_group_id(name)
         ttype = "🎓 *Розклад групи `" + id[1]
     if mode == "teacher":
-        id = await get_teacher_id(name)
         ttype = "💼 *Розклад викладача `" + id[1]
-    schedule_arr += id + [mode, SD, ED]
-    res = await get_schedule(id[0], mode)
+
+    schedule_arr = [id[0], id[1], mode, SD, ED]
+    res = await get_schedule(id[0], mode, None, None)
+
     if (
         res["psrozklad_export"]["code"] == "0"
         and len(res["psrozklad_export"]["roz_items"]) != 0
@@ -89,7 +87,18 @@ async def schedule(message: types.Message, mode, name):
                 schedule_arr.append(week_message)
     else:
         schedule_arr.append(False)
-    await schedule_data(message, "save", schedule_arr)
+
+    res = await schedule_data(message, "check", schedule_arr)
+    if not res:
+        await schedule_data(message, "save", schedule_arr)
+    elif (
+        schedule_arr[5]
+        or (not schedule_arr[5] and res[6] and SD > res[5])
+        or (not schedule_arr[5] and res[6] and SD == res[4])
+    ):
+        await schedule_data(message, "update", schedule_arr)
+    elif not schedule_arr[5] and res[6] and SD < res[5] and SD > res[4]:
+        await schedule_data(message, "week_update", schedule_arr)
 
 
 async def has_need_group(txt):
