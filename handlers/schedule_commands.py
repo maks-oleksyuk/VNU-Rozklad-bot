@@ -91,8 +91,8 @@ async def get_day_timetable(message: types.Message, date):
             SD = date
             day = date.weekday()
         else:
-            SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=day)
             day = days[message.text]
+            SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=day)
         res = await schedule_data(None, "get_date", id[0])
         if SD >= res[0] and SD <= res[1]:
             await user_data(message, "data", [id[0], id[1], id[2], SD])
