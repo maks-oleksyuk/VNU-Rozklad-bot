@@ -96,7 +96,7 @@ async def get_day_timetable(message: types.Message, date):
         res = await schedule_data(None, "get_date", id[0])
         if SD >= res[0] and SD <= res[1]:
             await user_data(message, "data", [id[0], id[1], id[2], SD])
-            if SD - res[0] < timedelta(days=6):
+            if SD - res[0] < timedelta(days=7):
                 col = await get_column(day, 0, 0)
             else:
                 col = await get_column(day, 0, 1)

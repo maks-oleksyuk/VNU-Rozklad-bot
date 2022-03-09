@@ -57,7 +57,7 @@ async def schedule(message: types.Message, mode, id):
                         item += "📌 __*" + i["reservation"] + "*__"
                         week_message += i["reservation"]
                     if i["replacement"]:
-                        item += "❗️ __*" + i["replacement"] + "*__❗️\n"
+                        item += "❗️ *" + i["replacement"] + "*❗️\n"
                     if i["title"]:
                         item += "📕 __*" + i["title"] + "*__"
                         week_message += i["title"]
@@ -145,7 +145,7 @@ async def add_lesson(mes, ls, lsn):
     if ls["reservation"]:
         mes += "📌 __*" + ls["reservation"] + "*__"
     if ls["replacement"]:
-        mes += "❗️ __*" + ls["replacement"] + "*__❗️\n"
+        mes += "❗️ *" + ls["replacement"] + "*❗️\n"
     if ls["title"]:
         mes += "📕 __*" + ls["title"] + "*__"
     if ls["teacher"] and ls["type"]:
