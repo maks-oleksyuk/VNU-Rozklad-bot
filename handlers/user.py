@@ -1,5 +1,6 @@
 from config import faculty, chair
 from config import bot, dp, base, cur
+from config import is_date
 from config import search_group, search_teacher
 from config import get_group_id, get_teacher_id
 from message import answer, reply
@@ -39,6 +40,10 @@ async def text(message: types.Message):
             await schedule_commands.changeweek(message, "prev")
         case "тиждень ➡️":
             await schedule_commands.changeweek(message, "next")
+        case "📆 Ввести дату":
+            await answer(message, "set-date", None)
+            await FSMSetDate.set_date.set()
+
 
 # Implementation of the handler for command /cancel
 async def cancel(message: types.Message, state: FSMContext):
@@ -139,12 +144,43 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
 
 
 # -----------------------------------------------------------
+# Handler implementation of date input from user
+# -----------------------------------------------------------
+
+class FSMSetDate(StatesGroup):
+    set_date = State()
+
+async def cancel_date(message: types.Message, state: FSMSetDate):
+    await state.finish()
+    await answer(message, "cancel-date", None)
+
+async def set_date(message: types.Message, state: FSMContext):
+    new_date = await is_date(message.text)
+    if new_date:
+        await state.finish()
+        await schedule_commands.get_day_timetable(message, new_date)
+    else:
+        await answer(message, "error-date", None)
+
+
+async def setdate(message: types.Message):
+    id = await user_data(message, "get_data_id", None)
+    if not id[0]:
+        await answer(message, "not_data")
+    else:
+        await answer(message, "set-date", None)
+        await FSMSetDate.set_date.set()
+
+
+# -----------------------------------------------------------
 # Registration of all handlers
 # -----------------------------------------------------------
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(start,  commands = "start", chat_type = types.ChatType.PRIVATE)
+    dp.register_message_handler(cancel_date, commands = "cancel", state = FSMSetDate.set_date, chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(cancel, commands = "cancel", state = "*", chat_type = types.ChatType.PRIVATE)
+    dp.register_message_handler(setdate,  commands = "setdate", chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(text, chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setStudentFaculty, state = FSMStudent.faculty, chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setTeaсherChair,   state = FSMTeaсher.chair,   chat_type = types.ChatType.PRIVATE)
@@ -152,3 +188,5 @@ def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(setTeacherSurname, state = FSMTeaсher.surname, chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setGroupSearch,    state = FSMStudent.search,  chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setTeacherSearch,  state = FSMTeaсher.search,  chat_type = types.ChatType.PRIVATE)
+    dp.register_message_handler(set_date,  state = FSMSetDate.set_date,  chat_type = types.ChatType.PRIVATE)
+

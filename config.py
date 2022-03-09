@@ -1,8 +1,10 @@
 import json
 import psycopg2 as ps
-from aiogram import Bot
 from decouple import config
 from request import getChair, getFaculties
+from aiogram import Bot
+from datetime import date, datetime
+from dateutil.parser import parse
 from aiogram.dispatcher import Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
@@ -148,3 +150,22 @@ async def get_column(weekday, week, next):
     if next:
         col = "n_" + col
     return col
+
+
+async def is_date(string, fuzzy=False):
+    try:
+        parse(string, fuzzy=fuzzy)
+        if len(string) == 5 and int(string[3:]) <= 12 and int(string[:2]) <= 31:
+            d = date(date.today().year, int(string[3:]), int(string[:2]))
+            print(datetime.now())
+            return d
+        elif len(string) == 5 and int(string[3:]) <= 31 and int(string[:2]) <= 12:
+            d = date(date.today().year, int(string[:2]), int(string[3:]))
+            return d
+        elif len(string) == 5 and int(string[3:]) > 12 and int(string[:2]) > 12:
+            return False
+        else:
+            return parse(string).date()
+
+    except ValueError:
+        return False

@@ -51,11 +51,26 @@ async def answer(message: types.Message, option, data):
             await message.answer(
                 data, parse_mode="MarkdownV2",
                 reply_markup = await setKeyboard(message, "timetable"))
-
         case "not_data":
             await message.answer(
                 "🌀 Обери для кого будемо формувати розклад",
                 reply_markup = await setKeyboard(None, "choice"))
+        case "set-date":
+            await message.answer(
+                "📆 *Введіть дату:*\n"
+                + "☝️ Найкращий варіант – `YYYY-mm-dd`\n"
+                + "але доступно також багато інших\n\n"
+                + "/cancel – для відміни",
+                parse_mode="MarkdownV2")
+        case "error-date":
+            await message.answer(
+                "❗️ *Невірний формат дати* ❗️\n"
+                + "🌀 Повторіть спробу ще раз\n\n"
+                + "☝️ Найкращий варіант – `YYYY-mm-dd`\n\n"
+                + "/cancel – для відміни",
+                parse_mode="MarkdownV2")
+        case "cancel-date":
+            await message.answer("❕ Введеня дати скасовано\n")
 
 async def reply(message: types.Message, option):
     match option:

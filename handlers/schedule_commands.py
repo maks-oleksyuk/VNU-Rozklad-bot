@@ -74,7 +74,6 @@ async def get_day_timetable(message: types.Message, date):
     if not id[0]:
         await answer(message, "not_data")
     else:
-        text = message.text
         days = {
             "Пн": 0,
             "Вт": 1,
@@ -85,17 +84,22 @@ async def get_day_timetable(message: types.Message, date):
             "Нд": 6,
             "🔘": id[3].weekday(),
         }
-        if text == "🔘":
+        if message.text == "🔘":
             SD = id[3]
+            day = days[message.text]
+        if date:
+            SD = date
+            day = date.weekday()
         else:
-            SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=days[text])
+            SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=day)
+            day = days[message.text]
         res = await schedule_data(None, "get_date", id[0])
         if SD >= res[0] and SD <= res[1]:
             await user_data(message, "data", [id[0], id[1], id[2], SD])
             if SD - res[0] < timedelta(days=6):
-                col = await get_column(days[text], 0, 0)
+                col = await get_column(day, 0, 0)
             else:
-                col = await get_column(days[text], 0, 1)
+                col = await get_column(day, 0, 1)
             mes = await schedule_data(message, "get_col", [col, id[0]])
             await answer(message, "data", mes[0])
         else:
