@@ -88,6 +88,7 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
         if len(gr) == 1:
             await state.finish() 
             arr_data = await get_group_id(gr[0]) + ["group", date.today()] 
+            await user_data(message, "save", None)
             await user_data(message, "data", arr_data)
             await schedule_commands.today(message)
         elif len(gr) > 1:
@@ -134,6 +135,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         if len(tr) == 1:
             await state.finish()
             arr_data = await get_teacher_id(tr[0]) + ["teacher", date.today()]
+            await user_data(message, "save", None)
             await user_data(message, "data", arr_data)
             await schedule_commands.today(message)
         elif len(tr) > 1:
@@ -165,11 +167,12 @@ async def set_date(message: types.Message, state: FSMContext):
 
 async def setdate(message: types.Message):
     id = await user_data(message, "get_data_id", None)
-    if not id[0]:
-        await answer(message, "not_data")
-    else:
+    try:
+        id[0]
         await answer(message, "set-date", None)
         await FSMSetDate.set_date.set()
+    except:
+        await answer(message, "not_data", None)
 
 
 # -----------------------------------------------------------
