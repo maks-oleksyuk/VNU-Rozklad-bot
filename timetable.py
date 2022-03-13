@@ -1,8 +1,9 @@
 from config import week
+from config import get_teacher_full_name
 from aiogram import types
 from request import get_schedule
 from database import schedule_data
-from datetime import timedelta, date
+from datetime import datetime, time, timedelta, date
 
 
 async def schedule(message: types.Message, mode, id):
@@ -43,7 +44,7 @@ async def schedule(message: types.Message, mode, id):
                         )
                     if lsn == i["lesson_number"]:
                         item += "\n"
-                        week_message += "\n *✧* "
+                        week_message += "\n *▸* "
                     else:
                         item += (
                             "\n\n🔅 _"
@@ -124,9 +125,50 @@ async def schedule_for_the_date(message: types.Message, mode, tid, date):
             if i["date"] == date.strftime("%d.%m.%Y") and i["lesson_number"] != "0":
                 mes = await add_lesson(mes, i, lsn)
                 lsn = i["lesson_number"]
-
     else:
         mes += "\n\n🔺 Даних не знайдено!"
+    mes = await multy_replase(mes)
+    return mes
+
+
+async def now_subject(message: types.Message, mode, tid, date):
+    res = await get_schedule(tid, mode, date)
+    mes = ""
+    if (
+        res["psrozklad_export"]["code"] == "0"
+        and len(res["psrozklad_export"]["roz_items"]) != 0
+    ):
+        name = res["psrozklad_export"]["roz_items"][0]["object"]
+        if mode == "group":
+            mes += "🎓 *Група:* `" + name + "`"
+        if mode == "teacher":
+            mes += "💼 *Викладач* `" + name + "`"
+        has = 0
+        for i in res["psrozklad_export"]["roz_items"]:
+            s = time.fromisoformat(i["lesson_time"][:5])
+            n = datetime.now().time()
+            e = time.fromisoformat(i["lesson_time"][6:])
+            if s <= n and n <= e:
+                has = 1
+                if i["title"]:
+                    mes += "\n\n📕 *" + i["title"] + "*"
+                if i["type"]:
+                    mes += " _(" + i["type"] + ")_"
+                if i["teacher"] and mode == "group":
+                    teacher = await get_teacher_full_name(i["teacher"])
+                    mes += "\n💼 " + teacher
+                if i["room"]:
+                    mes += "\n🔑 " + i["room"]
+                if i["group"] and mode == "teacher":
+                    mes += "\n👥 " + i["group"]
+                left = timedelta(hours=e.hour, minutes=e.minute) - timedelta(
+                    hours=n.hour, minutes=n.minute
+                )
+                mes += "\n*До кінця пари:* " + str(left)
+        if not has:
+            mes = "❕Зараз пари немає"
+    else:
+        mes = "❕Зараз пари немає"
     mes = await multy_replase(mes)
     return mes
 

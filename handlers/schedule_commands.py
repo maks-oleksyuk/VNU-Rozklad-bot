@@ -1,9 +1,18 @@
 from config import get_column
 from message import answer
 from database import schedule_data, user_data
-from timetable import schedule, schedule_for_the_date
+from timetable import schedule, schedule_for_the_date, now_subject
 from datetime import date, timedelta
 from aiogram import Dispatcher, types
+
+
+async def now(message: types.Message):
+    id = await user_data(message, "get_data_id", None)
+    if not id[0]:
+        await answer(message, "not_data")
+    else:
+        mes = await now_subject(message, id[2], id[0], date.today())
+        await answer(message, "data", mes)
 
 
 async def today(message: types.Message):
@@ -26,7 +35,10 @@ async def tomorrow(message: types.Message):
         await schedule(message, id[2], id)
         user_date = date.today() + timedelta(days=1)
         await user_data(message, "data", [id[0], id[1], id[2], id[3]])
-        col = await get_column(user_date.weekday(), 0, 0)
+        if user_date.weekday() == 0:
+            col = await get_column(user_date.weekday(), 0, 1)
+        else:
+            col = await get_column(user_date.weekday(), 0, 0)
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
 
@@ -109,6 +121,7 @@ async def get_day_timetable(message: types.Message, date):
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):
+    dp.register_message_handler(now, commands="now", chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(
         today, commands="today", chat_type=types.ChatType.PRIVATE
     )
