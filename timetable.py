@@ -8,7 +8,7 @@ from database import schedule_data
 
 
 async def schedule(message: types.Message, mode, id):
-    """_summary_
+    """Forming the schedule and saving it
 
     Args:
         message (types.Message): message with additional data
@@ -207,12 +207,10 @@ async def add_lesson(mes, ls, lsn):
         mes += "❗️ *" + ls["replacement"] + "*\n"
     if ls["title"]:
         mes += "📕 __*" + ls["title"] + "*__"
-    if ls["teacher"] and ls["type"]:
-        mes += "  _(" + ls["teacher"] + "  |  " + ls["type"] + ")_"
-    elif ls["teacher"]:
-        mes += "  _(" + ls["teacher"] + ")_"
-    elif ls["type"]:
+    if ls["type"]:
         mes += "  _(" + ls["type"] + ")_"
+    if ls["teacher"]:
+        mes += "\n💼 _" + ls["teacher"] + "_"
     if ls["room"] and ls["group"]:
         mes += "\n👥 " + ls["room"] + "  |  " + ls["group"]
     elif ls["room"]:

@@ -14,7 +14,7 @@ async def now(message: types.Message):
         mes = await now_subject(message, id[2], id[0])
         await answer(message, "data", mes)
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "not_data")
 
 
 async def today(message: types.Message):
@@ -27,7 +27,7 @@ async def today(message: types.Message):
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "not_data")
 
 
 async def tomorrow(message: types.Message):

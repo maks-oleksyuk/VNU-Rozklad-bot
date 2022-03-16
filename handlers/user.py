@@ -3,12 +3,12 @@ from datetime import date
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from config import (base, bot, chair, cur, dp, faculty, get_group_id,
-                    get_teacher_id, is_date, search_group, search_teacher)
+from config import (chair, faculty, get_group_id, get_teacher_id, is_date,
+                    search_group, search_teacher)
 from database import user_data
 from message import answer, reply
 
-from handlers import schedule_commands
+from handlers import sched_cmd
 
 # -----------------------------------------------------------
 # Implementation of basic handlers
@@ -16,7 +16,7 @@ from handlers import schedule_commands
 
 # Implementation of the handler for command /start
 async def start(message: types.Message):
-    await answer(message, "start", None)
+    await answer(message, "start")
     await user_data(message, "save", None)
 
 
@@ -25,22 +25,22 @@ async def text(message: types.Message):
     match message.text:
         case "Студент 🎓":
             await FSMStudent.faculty.set()
-            await answer(message, "faculty", None)
+            await answer(message, "faculty")
         case "Викладач 💼":
             await FSMTeaсher.chair.set()
-            await answer(message, "chair", None)
+            await answer(message, "chair")
         case "сьогодні":
-            await schedule_commands.today(message)
+            await sched_cmd.today(message)
         case "На тиждень":
-            await schedule_commands.week(message)
+            await sched_cmd.week(message)
         case "Пн" | "Вт" | "Ср" | "Чт" | "Пт" | "Сб" | "Нд" | "🔘":
-            await schedule_commands.get_day_timetable(message, None)
+            await sched_cmd.get_day_timetable(message, None)
         case "⬅️ тиждень":
-            await schedule_commands.changeweek(message, "prev")
+            await sched_cmd.changeweek(message, "prev")
         case "тиждень ➡️":
-            await schedule_commands.changeweek(message, "next")
+            await sched_cmd.changeweek(message, "next")
         case "📆 Ввести дату":
-            await answer(message, "set-date", None)
+            await answer(message, "set-date")
             await FSMSetDate.set_date.set()
 
 
@@ -66,14 +66,14 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
         await cancel(message, state)
     elif message.text in faculty:
         await FSMStudent.next()
-        await answer(message, "group", None)
+        await answer(message, "group")
     else:
         await setGroupSearch(message, state)
 
 async def setStudentGroup(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await FSMStudent.faculty.set()
-        await answer(message, "faculty"), None
+        await answer(message, "faculty")
     else:
         await setGroupSearch(message, state)
 
@@ -81,7 +81,7 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
     await FSMStudent.search.set()
     if message.text == "⬅️ Назад":
         await FSMStudent.faculty.set()
-        await answer(message, "faculty", None)
+        await answer(message, "faculty")
     else:
         gr = await search_group(message.text)
         if len(gr) == 1:
@@ -89,7 +89,7 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
             arr_data = await get_group_id(gr[0]) + ["group", date.today()] 
             await user_data(message, "save", None)
             await user_data(message, "data", arr_data)
-            await schedule_commands.today(message)
+            await sched_cmd.today(message)
         elif len(gr) > 1:
             await reply(message, "goodsearchGroup")
         else:
@@ -111,7 +111,7 @@ async def setTeaсherChair(message: types.Message, state: FSMContext):
         await cancel(message, state)
     elif message.text in chair:
         await FSMTeaсher.next()
-        await answer(message, "surname", None)
+        await answer(message, "surname")
     else:
         await setTeacherSearch(message, state)
 
@@ -119,7 +119,7 @@ async def setTeaсherChair(message: types.Message, state: FSMContext):
 async def setTeacherSurname(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await FSMTeaсher.chair.set()
-        await answer(message, "chair", None)
+        await answer(message, "chair")
     else:
         await setTeacherSearch(message, state)
 
@@ -128,7 +128,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
     await FSMTeaсher.search.set()
     if message.text == "⬅️ Назад":
         await FSMTeaсher.chair.set()
-        await answer(message, "chair", None)
+        await answer(message, "chair")
     else:
         tr = await search_teacher(message.text)
         if len(tr) == 1:
@@ -136,7 +136,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
             arr_data = await get_teacher_id(tr[0]) + ["teacher", date.today()]
             await user_data(message, "save", None)
             await user_data(message, "data", arr_data)
-            await schedule_commands.today(message)
+            await sched_cmd.today(message)
         elif len(tr) > 1:
             await reply(message, "goodsearchTeacher")
         else:
@@ -153,25 +153,25 @@ class FSMSetDate(StatesGroup):
 
 async def cancel_date(message: types.Message, state: FSMSetDate):
     await state.finish()
-    await answer(message, "cancel-date", None)
+    await answer(message, "cancel-date")
 
 async def set_date(message: types.Message, state: FSMContext):
     new_date = await is_date(message.text)
     if new_date:
         await state.finish()
-        await schedule_commands.get_day_timetable(message, new_date)
+        await sched_cmd.get_day_timetable(message, new_date)
     else:
-        await answer(message, "error-date", None)
+        await answer(message, "error-date")
 
 
 async def setdate(message: types.Message):
     id = await user_data(message, "get_data_id", None)
     try:
         id[0]
-        await answer(message, "set-date", None)
+        await answer(message, "set-date")
         await FSMSetDate.set_date.set()
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "not_data")
 
 
 # -----------------------------------------------------------
@@ -191,4 +191,3 @@ def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(setGroupSearch,    state = FSMStudent.search,  chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(setTeacherSearch,  state = FSMTeaсher.search,  chat_type = types.ChatType.PRIVATE)
     dp.register_message_handler(set_date,  state = FSMSetDate.set_date,  chat_type = types.ChatType.PRIVATE)
-
