@@ -137,7 +137,6 @@ async def get_teacher_full_name(query):
         for d in text["psrozklad_export"]["departments"]:
             for t in d["objects"]:
                 if query.lower().find(t["name"].lower()) != -1:
-                    print(t["name"], query)
                     i = t["P"] + " " + t["I"] + " " + t["B"]
                     return i
 
