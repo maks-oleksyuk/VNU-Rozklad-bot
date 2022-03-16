@@ -1,9 +1,7 @@
-from config import dp
-from config import on_startup, on_shutduwn
 from aiogram.utils import executor
 
-from handlers import user
-from handlers import schedule_commands
+from config import dp, on_shutduwn, on_startup
+from handlers import schedule_commands, user
 
 schedule_commands.register_handlers_schedule_commands(dp)
 user.register_handlers_user(dp)

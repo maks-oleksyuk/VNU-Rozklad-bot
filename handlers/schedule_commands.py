@@ -1,16 +1,17 @@
+from datetime import date, timedelta
+
 from config import get_column
 from message import answer
-from database import schedule_data, user_data
-from timetable import schedule, schedule_for_the_date, now_subject
-from datetime import date, timedelta
 from aiogram import Dispatcher, types
+from database import schedule_data, user_data
+from timetable import now_subject, schedule, schedule_for_the_date
 
 
 async def now(message: types.Message):
     id = await user_data(message, "get_data_id", None)
     try:
         id[0]
-        mes = await now_subject(message, id[2], id[0], date.today())
+        mes = await now_subject(message, id[2], id[0])
         await answer(message, "data", mes)
     except:
         await answer(message, "not_data", None)

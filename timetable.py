@@ -1,26 +1,34 @@
-from config import week
-from config import get_teacher_full_name
 from aiogram import types
+
+from datetime import date, datetime, time, timedelta
+
+from config import get_teacher_full_name, week
 from request import get_schedule
 from database import schedule_data
-from datetime import datetime, time, timedelta, date
 
 
 async def schedule(message: types.Message, mode, id):
+    """_summary_
 
+    Args:
+        message (types.Message): message with additional data
+        mode (str): type of schedule
+        id (obj): data about the object for which the schedule is formed
+    """
+    # Variables for working with dates
     ND = date.today()
     NW = date.today().weekday()
     SD = ND - timedelta(days=NW)
     ED = ND - timedelta(days=NW - 13)
-
+    # The header with the title
     if mode == "group":
         ttype = "🎓 *Розклад групи `" + id[1]
     if mode == "teacher":
         ttype = "💼 *Розклад викладача `" + id[1]
-
+    # Forming an array and getting query
     schedule_arr = [id[0], id[1], mode, SD, ED]
     res = await get_schedule(id[0], mode, None)
-
+    # Generation of the schedule on successful request
     if (
         res["psrozklad_export"]["code"] == "0"
         and len(res["psrozklad_export"]["roz_items"]) != 0
@@ -42,42 +50,8 @@ async def schedule(message: types.Message, mode, id):
                         week_message += (
                             "\n\n🔅 _*" + i["date"][:5] + " " + week[d] + "*_"
                         )
-                    if lsn == i["lesson_number"]:
-                        item += "\n"
-                        week_message += "\n *▸* "
-                    else:
-                        item += (
-                            "\n\n🔅 _"
-                            + i["lesson_number"]
-                            + " Пара ("
-                            + i["lesson_time"].replace("-", " - ")
-                            + ")_\n"
-                        )
-                        week_message += "\n *" + i["lesson_number"] + ". *"
-                    if i["reservation"]:
-                        item += "📌 __*" + i["reservation"] + "*__"
-                        week_message += i["reservation"]
-                    if i["replacement"]:
-                        item += "❗️ *" + i["replacement"] + "*❗️\n"
-                    if i["title"]:
-                        item += "📕 __*" + i["title"] + "*__"
-                        week_message += i["title"]
-                    if i["teacher"] and i["type"]:
-                        item += "  _(" + i["teacher"] + "  |  " + i["type"] + ")_"
-                    elif i["teacher"]:
-                        item += "  _(" + i["teacher"] + ")_"
-                    elif i["type"]:
-                        item += "  _(" + i["type"] + ")_"
-                    if i["room"] and i["group"]:
-                        item += "\n👥 " + i["room"] + "  |  " + i["group"]
-                    elif i["room"]:
-                        item += "\n👥 " + i["room"]
-                    elif i["group"]:
-                        item += "\n👥 " + i["group"]
-                    if mode == "group" and await has_need_group(i["group"]):
-                        week_message += " | ___" + i["group"] + "_\r__"
-                    if mode == "teacher":
-                        week_message += " | ___" + i["group"] + "_\r__"
+                    item = await add_lesson(item, i, lsn)
+                    week_message = await add_week_lesson(week_message, i, lsn, mode)
                     lsn = i["lesson_number"]
             if has_item == 0:
                 item += "\n\n🎉 *Вітаю!* В тебе вихідний 😎"
@@ -88,7 +62,7 @@ async def schedule(message: types.Message, mode, id):
                 schedule_arr.append(week_message)
     else:
         schedule_arr.append(False)
-
+    # Checking for data updates
     res = await schedule_data(message, "check", schedule_arr)
     if not res:
         await schedule_data(message, "save", schedule_arr)
@@ -103,6 +77,17 @@ async def schedule(message: types.Message, mode, id):
 
 
 async def schedule_for_the_date(message: types.Message, mode, tid, date):
+    """Forming a message with a schedule for a specific date
+
+    Args:
+        message (types.Message): message with additional data
+        mode (str): type of schedule
+        tid (obj): data about the object for which the schedule is formed
+        date (datetime): date on which to generate the schedule
+
+    Returns:
+        str: Messages schedule for the date
+    """
     res = await get_schedule(tid[0], mode, date)
     if mode == "group":
         ttype = "🎓 *Розклад групи `" + tid[1]
@@ -131,8 +116,18 @@ async def schedule_for_the_date(message: types.Message, mode, tid, date):
     return mes
 
 
-async def now_subject(message: types.Message, mode, tid, date):
-    res = await get_schedule(tid, mode, date)
+async def now_subject(message: types.Message, mode, tid):
+    """Forming a message about the current lesson
+
+    Args:
+        message (types.Message): message with additional data
+        mode (str): type of schedule
+        tid (int): schedule identifier
+
+    Returns:
+        str: Message about the current lesson
+    """
+    res = await get_schedule(tid, mode, date.today())
     mes = ""
     has = 0
     if (
@@ -146,8 +141,7 @@ async def now_subject(message: types.Message, mode, tid, date):
             mes += "💼 *Викладач* `" + name + "`\n"
         for i in res["psrozklad_export"]["roz_items"]:
             s = time.fromisoformat(i["lesson_time"][:5])
-            # n = datetime.now().time()
-            n = time.fromisoformat("12:50")
+            n = datetime.now().time()
             e = time.fromisoformat(i["lesson_time"][6:])
             if s <= n and n <= e:
                 has = 1
@@ -187,6 +181,16 @@ async def now_subject(message: types.Message, mode, tid, date):
 
 
 async def add_lesson(mes, ls, lsn):
+    """Adding a schedule item to the week message
+
+    Args:
+        mes (str): the message of the weekly schedule
+        ls (obj): data array about the timetable element
+        lsn (str): item schedule number
+
+    Returns:
+        str: Message schedule with added element
+    """
     if lsn == ls["lesson_number"]:
         mes += "\n"
     else:
@@ -200,7 +204,7 @@ async def add_lesson(mes, ls, lsn):
     if ls["reservation"]:
         mes += "📌 __*" + ls["reservation"] + "*__"
     if ls["replacement"]:
-        mes += "❗️ *" + ls["replacement"] + "*❗️\n"
+        mes += "❗️ *" + ls["replacement"] + "*\n"
     if ls["title"]:
         mes += "📕 __*" + ls["title"] + "*__"
     if ls["teacher"] and ls["type"]:
@@ -218,7 +222,42 @@ async def add_lesson(mes, ls, lsn):
     return mes
 
 
+async def add_week_lesson(wmes, ls, lsn, mode):
+    """Adding a schedule item to the week message
+
+    Args:
+        wmes (str): the message of the weekly schedule
+        ls (obj): data array about the timetable element
+        lsn (str): item schedule number
+        mode (str): type of schedule
+
+    Returns:
+        str: Message schedule for the week with added element
+    """
+    if lsn == ls["lesson_number"]:
+        wmes += "\n *⊙* "
+    else:
+        wmes += "\n *" + ls["lesson_number"] + ". *"
+    if ls["reservation"]:
+        wmes += ls["reservation"]
+    if ls["title"]:
+        wmes += ls["title"]
+    if mode == "group" and await has_need_group(ls["group"]):
+        wmes += " | ___" + ls["group"] + "_\r__"
+    if mode == "teacher":
+        wmes += " | ___" + ls["group"] + "_\r__"
+    return wmes
+
+
 async def has_need_group(txt):
+    """Checking for specified elements in the text
+
+    Args:
+        txt str: Text to check
+
+    Returns:
+        bool: True if found and False if not
+    """
     if (
         txt.find("підгр.") != -1
         or txt.find("част. групи") != -1
@@ -230,6 +269,14 @@ async def has_need_group(txt):
 
 
 async def multy_replase(txt):
+    """Formatting special characters for MarkdownV2
+
+    Args:
+        txt (str): text to be formatted
+
+    Returns:
+        str: original, already formatted text
+    """
     txt = txt.replace(" (за професійним спрямуванням)", "")
     characters = {
         ".": "\.",
