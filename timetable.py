@@ -141,8 +141,7 @@ async def now_subject(message: types.Message, mode, tid):
             mes += "💼 *Викладач* `" + name + "`\n"
         for i in res["psrozklad_export"]["roz_items"]:
             s = time.fromisoformat(i["lesson_time"][:5])
-            # n = datetime.now().time()
-            n = time.fromisoformat("12:50")
+            n = datetime.now().time()
             e = time.fromisoformat(i["lesson_time"][6:])
             if s <= n and n <= e:
                 has = 1

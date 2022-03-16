@@ -1,9 +1,10 @@
 from aiogram import types
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+
+from config import (bot, chair, faculty, get_groups_by_faculty,
+                    get_teachers_by_chair, search_group, search_teacher)
 from database import user_data
-from datetime import date
-from config import search_group, search_teacher
-from config import bot, faculty, chair, get_groups_by_faculty, get_teachers_by_chair
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
 
 async def setKeyboard(message: types.Message, step):
     markup = ReplyKeyboardMarkup(resize_keyboard=True)

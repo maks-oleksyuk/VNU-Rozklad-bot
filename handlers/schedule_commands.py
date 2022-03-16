@@ -1,8 +1,8 @@
 from datetime import date, timedelta
 
+from aiogram import Dispatcher, types
 from config import get_column
 from message import answer
-from aiogram import Dispatcher, types
 from database import schedule_data, user_data
 from timetable import now_subject, schedule, schedule_for_the_date
 

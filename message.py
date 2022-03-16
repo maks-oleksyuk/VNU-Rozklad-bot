@@ -1,5 +1,7 @@
 from aiogram import types
+
 from keyboard import setKeyboard
+
 
 async def answer(message: types.Message, option, data):
     match option:

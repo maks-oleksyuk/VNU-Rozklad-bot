@@ -1,12 +1,14 @@
 import json
-import psycopg2 as ps
-from decouple import config
-from request import getChair, getFaculties
-from aiogram import Bot
 from datetime import date
-from dateutil.parser import parse
-from aiogram.dispatcher import Dispatcher
+
+import psycopg2 as ps
+from aiogram import Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher import Dispatcher
+from dateutil.parser import parse
+from decouple import config
+
+from request import getChair, getFaculties
 
 storage = MemoryStorage()
 

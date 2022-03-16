@@ -1,5 +1,7 @@
-from config import base, cur
 from aiogram import types
+
+from config import base, cur
+
 
 async def user_data(message: types.Message, option, data):
     uid = message.from_user.id

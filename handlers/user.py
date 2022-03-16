@@ -1,15 +1,14 @@
-from config import faculty, chair
-from config import bot, dp, base, cur
-from config import is_date
-from config import search_group, search_teacher
-from config import get_group_id, get_teacher_id
-from message import answer, reply
-from database import user_data
 from datetime import date
+
 from aiogram import Dispatcher, types
-from handlers import schedule_commands
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from config import (base, bot, chair, cur, dp, faculty, get_group_id,
+                    get_teacher_id, is_date, search_group, search_teacher)
+from database import user_data
+from message import answer, reply
+
+from handlers import schedule_commands
 
 # -----------------------------------------------------------
 # Implementation of basic handlers
