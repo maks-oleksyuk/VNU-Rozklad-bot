@@ -8,7 +8,7 @@ from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
 from decouple import config
 
-from request import getChair, getFaculties
+from request import get_chair, get_faculties
 
 storage = MemoryStorage()
 
@@ -41,8 +41,8 @@ week = [
 
 async def on_startup(dp):
     print("Bot Started")
-    await getChair()
-    await getFaculties()
+    await get_chair()
+    await get_faculties()
     with open("json/chair.min.json") as f:
         text = json.loads(f.read())
         for d in text["psrozklad_export"]["departments"]:

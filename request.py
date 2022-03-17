@@ -1,11 +1,12 @@
 import json
-from datetime import datetime, timedelta
 from pathlib import Path
+from datetime import datetime, timedelta
 
 import requests
 
 
-async def getFaculties():
+async def get_faculties():
+    """Obtaining and saving data about faculties"""
     path = Path("json/faculties.min.json")
     if not path.exists() or datetime.now().day == 31:
         payload = {
@@ -21,13 +22,12 @@ async def getFaculties():
         )
         text = json.loads(r.text)
         if text["psrozklad_export"]["code"] == "0":
-            with open("json/faculties.json", "w+") as f:
-                json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
             with open("json/faculties.min.json", "w+") as f:
                 json.dump(text, f, ensure_ascii=False)
 
 
-async def getChair():
+async def get_chair():
+    """Obtaining and preserving department data"""
     path = Path("json/chair.min.json")
     if not path.exists() or datetime.now().day == 31:
         payload = {
@@ -53,13 +53,21 @@ async def getChair():
         for i in reversed(index):
             del text["psrozklad_export"]["departments"][i[0]]["objects"][i[1]]
         if text["psrozklad_export"]["code"] == "0":
-            with open("json/chair.json", "w+") as f:
-                json.dump(text, f, sort_keys=True, indent=2, ensure_ascii=False)
             with open("json/chair.min.json", "w+") as f:
                 json.dump(text, f, ensure_ascii=False)
 
 
-async def get_schedule(id, mode, date):
+async def get_schedule(id, mode, date=None):
+    """Getting schedule data
+
+    Args:
+        id (int): Schedule ID
+        mode (str): Schedule mode
+        date (datetime): The date on which you need to get the schedule
+
+    Returns:
+        dict: Received information
+    """
     ND = datetime.now()
     NW = datetime.now().weekday()
     if date:

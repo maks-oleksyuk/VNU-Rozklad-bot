@@ -101,3 +101,21 @@ async def schedule_data(message: types.Message, option, data):
             res = cur.fetchone()
             return res
     base.commit()
+
+
+async def admin_data(option):
+    """_summary_
+
+    Args:
+        option (_type_): _description_
+    """
+    match option:
+        case "all-stats":
+            cur.execute("""
+                select cur, aur, bur, cst, ast, bst, ctr, atr, btr, nt, tla, tlg, tlt
+                from all_stats()
+                as (cur INT, aur INT, bur INT, cst INT, ast INT, bst INT, ctr INT, atr INT, btr INT, nt INT, tla INT, tlg INT, tlt INT)""")
+            res = cur.fetchone()
+            return res
+    base.commit()
+

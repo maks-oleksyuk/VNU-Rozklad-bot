@@ -27,7 +27,7 @@ async def schedule(message: types.Message, mode, id):
         ttype = "💼 *Розклад викладача `" + id[1]
     # Forming an array and getting query
     schedule_arr = [id[0], id[1], mode, SD, ED]
-    res = await get_schedule(id[0], mode, None)
+    res = await get_schedule(id[0], mode)
     # Generation of the schedule on successful request
     if (
         res["psrozklad_export"]["code"] == "0"

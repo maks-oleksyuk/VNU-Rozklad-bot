@@ -91,10 +91,10 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
             await user_data(message, "data", arr_data)
             await sched_cmd.today(message)
         elif len(gr) > 1:
-            await reply(message, "goodsearchGroup")
+            await reply(message, "good-search-group")
         else:
             await FSMStudent.faculty.set()
-            await reply(message, "failsearchGroup")
+            await reply(message, "fail-search-group")
 
 # -----------------------------------------------------------
 # Implementation of the branch of development for the teacher
@@ -138,10 +138,10 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
             await user_data(message, "data", arr_data)
             await sched_cmd.today(message)
         elif len(tr) > 1:
-            await reply(message, "goodsearchTeacher")
+            await reply(message, "good-search-teacher")
         else:
             await FSMTeaсher.chair.set()
-            await reply(message, "failsearchTeacher")
+            await reply(message, "fail-search-teacher")
 
 
 # -----------------------------------------------------------
@@ -171,7 +171,7 @@ async def setdate(message: types.Message):
         await answer(message, "set-date")
         await FSMSetDate.set_date.set()
     except:
-        await answer(message, "not_data")
+        await answer(message, "no-data")
 
 
 # -----------------------------------------------------------

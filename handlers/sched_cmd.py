@@ -14,7 +14,7 @@ async def now(message: types.Message):
         mes = await now_subject(message, id[2], id[0])
         await answer(message, "data", mes)
     except:
-        await answer(message, "not_data")
+        await answer(message, "no-data")
 
 
 async def today(message: types.Message):
@@ -27,7 +27,7 @@ async def today(message: types.Message):
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
     except:
-        await answer(message, "not_data")
+        await answer(message, "no-data")
 
 
 async def tomorrow(message: types.Message):
@@ -44,7 +44,7 @@ async def tomorrow(message: types.Message):
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "no-data", None)
 
 
 async def week(message: types.Message):
@@ -57,7 +57,7 @@ async def week(message: types.Message):
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "no-data", None)
 
 
 async def nextweek(message: types.Message):
@@ -70,7 +70,7 @@ async def nextweek(message: types.Message):
         mes = await schedule_data(message, "get_col", [col, id[0]])
         await answer(message, "data", mes[0])
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "no-data", None)
 
 
 async def changeweek(message: types.Message, type):
@@ -85,7 +85,7 @@ async def changeweek(message: types.Message, type):
         await user_data(message, "data", [id[0], id[1], id[2], SD])
         await get_day_timetable(message, SD)
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "no-data", None)
 
 
 async def get_day_timetable(message: types.Message, date):
@@ -125,7 +125,7 @@ async def get_day_timetable(message: types.Message, date):
             await user_data(message, "data", [id[0], id[1], id[2], SD])
             await answer(message, "data", mes)
     except:
-        await answer(message, "not_data", None)
+        await answer(message, "no-data", None)
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):
