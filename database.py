@@ -13,7 +13,7 @@ async def user_data(message: types.Message, option, data):
             if not res:
                 cur.execute("INSERT INTO users (uid, name, status) VALUES (%s, %s, true)", [uid, name])
             else:
-                cur.execute("UPDATE users SET name = %s, status = true WHERE uid = %s", [name, uid])
+                cur.execute("UPDATE users SET name = %s, status = true, last_active = default WHERE uid = %s", [name, uid])
         case "data":
             data = [name] + data + [uid]
             cur.execute("""UPDATE users SET
@@ -22,7 +22,8 @@ async def user_data(message: types.Message, option, data):
                             data_id = %s,
                             data_name = %s,
                             data_type  = %s,
-                            data_date = %s
+                            data_date = %s,
+                            last_active = default
                             WHERE uid = %s""", data)
         case "get_data_id":
             cur.execute("SELECT data_id, data_name, data_type, data_date FROM users WHERE uid = %s", [uid])
@@ -103,7 +104,7 @@ async def schedule_data(message: types.Message, option, data):
     base.commit()
 
 
-async def admin_data(option):
+async def admin_data(option, data=None):
     """_summary_
 
     Args:
@@ -116,6 +117,29 @@ async def admin_data(option):
                 from all_stats()
                 as (cur INT, aur INT, bur INT, cst INT, ast INT, bst INT, ctr INT, atr INT, btr INT, nt INT, tla INT, tlg INT, tlt INT)""")
             res = cur.fetchone()
-            return res
+        case "last-activity":
+            cur.execute("""
+                select lat, law, lam, cur
+                from last_activity()
+                as (lat INT, law INT, lam INT, cur INT)""")
+            res = cur.fetchone()
+        case "last-users":
+            cur.execute("""
+                SELECT last_active, uid, name 
+                FROM users
+                WHERE last_active >= (date_trunc('month', CURRENT_DATE)::date)
+                ORDER BY last_active DESC""")
+            res = cur.fetchall()
+        case "all-active":
+            cur.execute("""
+                SELECT last_active, uid, name, data_name 
+                FROM users
+                WHERE status = TRUE
+                ORDER BY last_active DESC""")
+            res = cur.fetchall()
+        case "user-uid":
+            cur.execute("SELECT name FROM users WHERE uid = %s", [data])
+            res = cur.fetchone()
     base.commit()
+    return res
 

@@ -80,12 +80,6 @@ async def answer(message: types.Message, option, data=None):
                 parse_mode="MarkdownV2")
         case "cancel-date":
             await message.answer("❕ Введеня дати скасовано")
-        case "admin":
-            await message.answer(
-                "*Список команд адміна:*\n\n"
-                + "/all\_stats – Загальна статистика",
-                parse_mode="MarkdownV2")
-
 
 
 async def reply(message: types.Message, option):
