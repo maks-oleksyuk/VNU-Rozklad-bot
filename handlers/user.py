@@ -167,9 +167,11 @@ async def set_date(message: types.Message, state: FSMContext):
 async def setdate(message: types.Message):
     id = await user_data(message, "get_data_id", None)
     try:
-        id[0]
-        await answer(message, "set-date")
-        await FSMSetDate.set_date.set()
+        if id[0] != None:
+            await answer(message, "set-date")
+            await FSMSetDate.set_date.set()
+        else:
+            await answer(message, "no-data")
     except:
         await answer(message, "no-data")
 

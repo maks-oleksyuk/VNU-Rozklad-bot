@@ -1,9 +1,11 @@
 from sre_constants import ANY
 from aiogram import Dispatcher, types
+import aiogram
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from database import admin_data
 from decouple import config
+from message import answer
 from timetable import multy_replase
 from config import bot
 
@@ -120,30 +122,38 @@ async def get_uid(message: types.Message, state: FSMContext):
         res = 0
         if uid < 9223372036854775807 and uid > -9223372036854775807:
             res = await admin_data("user-uid", message.text)
+        mes = ""
         if res:
             name = await multy_replase(res[0])
-            await message.answer(
-                "За цим UID знайдено користувача – ["
+            mes = (
+                "🗂 Знайшов у себе за UID – ["
                 + name
                 + "](tg://user?id="
                 + message.text
-                + ")\n\nНадішліть повідомлення яке потрібно відправти",
-                parse_mode="MarkdownV2",
+                + ")\n\n"
             )
         else:
-            await message.answer(
-                "Можливо, цей UID правильний – ["
-                + str(uid)
-                + "](tg://user?id="
+            mes = (
+                "⚠️ Можливо це правильний [UID](tg://user?id="
                 + message.text
-                + ")\n\nНадішліть повідомлення яке потрібно відправти",
-                parse_mode="MarkdownV2",
+                + ") ⚠️\n\n"
             )
-            await state.update_data(uid=message.text)
-            # await get_msg(message, state)
-            await FSMSendMsg.last()
+        mes += (
+            "Чекаю повідомлення для відправлення\.\.\.\n"
+            + " Я можу надіслати наступне:\n"
+            + "  • відео\n"
+            + "  • стікер\n"
+            + "  • голосове\n"
+            + "  • зображення\n"
+            + "  • аудіо \(mp3\)\n"
+            + "  • відео \(кружок\)\n"
+            + "  • анімацію \(gif\)\n"
+        )
+        await message.answer(mes, parse_mode="MarkdownV2")
+        await state.update_data(uid=message.text)
+        await FSMSendMsg.last()
     except ValueError:
-        await message.answer("Невірний UID")
+        await message.answer("❌ Невірний UID")
 
 
 async def get_tid(message: types.Message, state: FSMContext):
@@ -151,33 +161,71 @@ async def get_tid(message: types.Message, state: FSMContext):
 
 
 async def get_msg(message: types.ContentType.ANY, state: FSMContext):
-    # await FSMSendMsg.msg.set()
     user_data = await state.get_data()
-    if message.animation:
-        await bot.send_animation(616460028, message.animation.file_id)
-    if message.audio:
-        await bot.send_audio(616460028, message.audio.file_id)
-    if message.document and not message.animation:
-        await bot.send_document(616460028, message.document.file_id)
-    if message.photo:
-        await bot.send_photo(
-            616460028, message.photo[0].file_id, caption=message.caption
+    uid = user_data["uid"]
+    try:
+        if message.animation:
+            await bot.send_animation(
+                uid,
+                message.animation.file_id,
+                caption=message.html_text,
+                parse_mode="HTML",
+            )
+        if message.audio:
+            await bot.send_audio(
+                uid, message.audio.file_id, caption=message.html_text, parse_mode="HTML"
+            )
+        if message.document and not message.animation:
+            await bot.send_document(
+                uid,
+                message.document.file_id,
+                caption=message.html_text,
+                parse_mode="HTML",
+            )
+        if message.photo:
+            await bot.send_photo(
+                uid,
+                message.photo[0].file_id,
+                caption=message.html_text,
+                parse_mode="HTML",
+            )
+        if message.sticker:
+            await bot.send_sticker(uid, message.sticker.file_id)
+        if message.text:
+            await bot.send_message(uid, message.html_text, parse_mode="HTML")
+        if message.video:
+            await bot.send_video(
+                uid, message.video.file_id, caption=message.html_text, parse_mode="HTML"
+            )
+        if message.video_note:
+            await bot.send_video_note(uid, message.video_note.file_id)
+        if message.voice:
+            await bot.send_voice(
+                uid, message.voice.file_id, caption=message.html_text, parse_mode="HTML"
+            )
+        # TODO Доробити надсилання media_group
+        # if message.media_group_id:
+        #     await bot.send_media_group(uid, gr)
+        await message.answer("✅ Повідомлення успішно надіслано")
+    except aiogram.utils.exceptions.ChatNotFound:
+        await message.answer(
+            "❗️ Повідомлення не надіслано\n" + "❌ Не знайдено чат для відправлення"
         )
-    if message.sticker:
-        await bot.send_sticker(616460028, message.sticker.file_id)
-    if message.text:
-        await bot.send_message(616460028, message.html_text, parse_mode="HTML")
-    if message.video:
-        await bot.send_video(616460028, message.video.file_id)
-    if message.video_note:
-        await bot.send_video_note(616460028, message.video_note.file_id)
-    if message.voice:
-        await bot.send_voice(616460028, message.voice.file_id)
+    except aiogram.utils.exceptions.BotBlocked:
+        await message.answer(
+            "❗️ Повідомлення не надіслано\n" + "⛔️ Користувач заблокував бота"
+        )
+    except Exception as e:
+        await message.answer(
+            "❗️ Повідомлення не надіслано\n"
+            + "❌ Сталася неочікувана помилка:\n\n"
+            + str(e)
+        )
     await state.finish()
 
 
 async def send_msg_user(message: types.Message):
-    await message.answer("Введіть UID користувача Telegram")
+    await message.answer("🆔 Введіть UID користувача Telegram")
     await FSMSendMsg.uid.set()
 
 

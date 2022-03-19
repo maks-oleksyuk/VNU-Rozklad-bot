@@ -1,10 +1,11 @@
 from aiogram.utils import executor
 
 from config import dp, on_shutduwn, on_startup
-from handlers import sched_cmd, user, admin
+from handlers import admin, cmd, sched_cmd, user
 
 sched_cmd.register_handlers_schedule_commands(dp)
 admin.register_handlers_admin(dp)
+cmd.register_handlers_schedule_commands(dp)
 user.register_handlers_user(dp)
 
 if __name__ == "__main__":

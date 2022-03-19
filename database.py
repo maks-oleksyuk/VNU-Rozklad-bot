@@ -127,7 +127,7 @@ async def admin_data(option, data=None):
             cur.execute("""
                 SELECT last_active, uid, name 
                 FROM users
-                WHERE last_active >= (date_trunc('month', CURRENT_DATE)::date)
+                WHERE last_active >= CURRENT_DATE
                 ORDER BY last_active DESC""")
             res = cur.fetchall()
         case "all-active":
