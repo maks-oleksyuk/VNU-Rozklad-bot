@@ -62,5 +62,5 @@ async def setKeyboard(option, message: types.Message = None):
             days[res[3].weekday()] = "🔘"
             markup.row(days[0], days[1], days[2], days[3], days[4], days[5], days[6])
             markup.row("⬅️ тиждень", "сьогодні", "тиждень ➡️")
-            markup.row("Нагадування ⏰", "На тиждень", "📆 Ввести дату")
+            markup.row("Змінити запит", "На тиждень", "📆 Ввести дату")
     return markup

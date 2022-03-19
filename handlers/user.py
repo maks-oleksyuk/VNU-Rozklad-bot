@@ -39,6 +39,8 @@ async def text(message: types.Message):
             await sched_cmd.changeweek(message, "prev")
         case "тиждень ➡️":
             await sched_cmd.changeweek(message, "next")
+        case "Змінити запит":
+            await cancel(message, None)
         case "📆 Ввести дату":
             await answer(message, "set-date")
             await FSMSetDate.set_date.set()
@@ -46,7 +48,8 @@ async def text(message: types.Message):
 
 # Implementation of the handler for command /cancel
 async def cancel(message: types.Message, state: FSMContext):
-    await state.finish()
+    if state:
+        await state.finish()
     await user_data(message, "save", None)
     await answer(message, "choice", None)
 
