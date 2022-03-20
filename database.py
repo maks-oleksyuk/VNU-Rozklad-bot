@@ -111,24 +111,18 @@ async def admin_data(option, data=None):
         option (_type_): _description_
     """
     match option:
-        case "all-stats":
-            cur.execute("""
-                select cur, aur, bur, cst, ast, bst, ctr, atr, btr, nt, tla, tlg, tlt
-                from all_stats()
-                as (cur INT, aur INT, bur INT, cst INT, ast INT, bst INT, ctr INT, atr INT, btr INT, nt INT, tla INT, tlg INT, tlt INT)""")
+        case "stats":
+            cur.execute("SELECT * FROM stats()")
             res = cur.fetchone()
-        case "last-activity":
-            cur.execute("""
-                select lat, law, lam, cur
-                from last_activity()
-                as (lat INT, law INT, lam INT, cur INT)""")
+        case "activity":
+            cur.execute("SELECT * FROM activity()")
             res = cur.fetchone()
         case "last-users":
             cur.execute("""
                 SELECT last_active, uid, name 
                 FROM users
                 WHERE last_active >= CURRENT_DATE
-                ORDER BY last_active DESC""")
+                ORDER BY last_active""")
             res = cur.fetchall()
         case "all-active":
             cur.execute("""

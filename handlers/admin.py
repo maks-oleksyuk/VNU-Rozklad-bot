@@ -1,88 +1,88 @@
-from sre_constants import ANY
 from aiogram import Dispatcher, types
-import aiogram
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.utils import exceptions
+from config import bot
 from database import admin_data
 from decouple import config
-from message import answer
 from timetable import multy_replase
-from config import bot
 
 
 async def admin(message: types.Message):
+    """Getting access to admin commands.
+
+    Args:
+        message (types.Message): This object represents a message.
+    """
     await message.answer(
         "*Список команд адміна:*\n\n"
-        + "/all\_stats – Загальна статистика\n"
-        + "/last\_activity – Активність користувачів\n"
+        + "/stats – Загальна статистика\n"
+        + "/activity – Активність користувачів\n"
         + "/last\_users – UID останіх користувачів\n"
         + "/all\_active – Список всіх активних користувачів\n"
-        + "/send\_msg\_user – Надіслати повідомлення за UID\n",
+        + "/send\_msg – Надіслати повідомлення\n",
         parse_mode="MarkdownV2",
     )
 
 
-async def all_stats(message: types.Message):
-    res = await admin_data("all-stats")
-    await message.answer(
-        "👤 *Всього користувачів – *"
-        + str(res[0])
-        + "\n✅    Активних – "
-        + str(res[1])
-        + "\n⛔️    Заблокували бота – "
-        + str(res[2])
-        + "\n\n🎓 *Всього cтудентів – *"
-        + str(res[3])
-        + "\n✅    Активних – "
-        + str(res[4])
-        + "\n⛔️    Заблокували бота – "
-        + str(res[5])
-        + "\n\n💼 *Всього викладачів – *"
-        + str(res[6])
-        + "\n✅    Активних – "
-        + str(res[7])
-        + "\n⛔️    Заблокували бота – "
-        + str(res[8])
-        + "\n\n⚠️ *Невизначились – *"
-        + str(res[9])
-        + "\n\n📚 *Всього розкладів у базі – *"
-        + str(res[10])
-        + "\n🎓    Для груп – "
-        + str(res[11])
-        + "\n💼    Для викладачів – "
-        + str(res[12]),
-        parse_mode="MarkdownV2",
-    )
+async def stats(message: types.Message):
+    """Getting statistics on users and schedules.
+
+    Args:
+        message (types.Message): This object represents a message.
+    """
+    res = await admin_data("stats")
+    msg = (
+        "👤 *Всього користувачів – {}*\n"
+        + "✅ ` Активних      – {}`\n"
+        + "🚫 ` Заблокованих  – {}`\n"
+        + "🎓 ` Студентів     – {}`\n"
+        + "💼 ` Викладачів    – {}`\n"
+        + "⚠️ ` Невизначились – {}`\n\n"
+        + "📚 *Всього розкладів у базі  – {}*\n"
+        + "🎓 ` Для груп       – {}`\n"
+        + "💼 ` Для викладачів – {}`\n"
+    ).format(*res)
+    await message.answer(msg, parse_mode="MarkdownV2")
 
 
-async def last_activity(message: types.Message):
-    res = await admin_data("last-activity")
-    await message.answer(
-        "👤 *Активність користувачів:*\n"
-        + "\n  Сьогодні – "
-        + str(res[0])
-        + "\n  Цього тижня – "
-        + str(res[1])
-        + "\n  Цього місяця – "
-        + str(res[2])
-        + "\n  Всього користувачів – "
-        + str(res[3]),
-        parse_mode="MarkdownV2",
-    )
+async def activity(message: types.Message):
+    """Sending bot usage statistics.
+
+    Args:
+        message (types.Message): This object represents a message.
+    """
+    res = await admin_data("activity")
+    msg = (
+        "👨‍💻 *Активність користувачів:*"
+        + "\n  •  Сьогодні – {}"
+        + "\n  •  Цього тижня – {}"
+        + "\n  •  Цього місяця – {}"
+        + "\n  •  Всього користувачів – {}"
+    ).format(*res)
+    await message.answer(msg, parse_mode="MarkdownV2")
 
 
 async def last_users(message: types.Message):
+    """Getting the last bot users.
+
+    Args:
+        message (types.Message): This object represents a message.
+    """
     res = await admin_data("last-users")
-    mes = (
-        "*Користувалися ботом сьогодні – "
-        + str(len(res))
-        + "\n\nTIME   |  UID               |  NAME*\n"
-        + "————————————————————————\n"
-    )
+    msg = (
+        "*Користувачів сьогодні – {}*\n\n`"
+        + " TIME ┃        UID ┃ NAME\n"
+        + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`\n"
+    ).format(len(res))
     for r in res:
-        mes += r[0].strftime("%H:%M") + "  |  " + str(r[1]) + "  |  " + r[2] + "\n"
-    mes = await multy_replase(mes)
-    await message.answer(mes, parse_mode="MarkdownV2")
+        time = r[0].strftime("%H\:%M")
+        empty = (10 - len(str(r[1]))) * " "
+        name = await multy_replase(r[2])
+        msg += "`{} ┃ {}{} ┃ `[{}](tg://user?id={})\n".format(
+            time, empty, r[1], name, r[1]
+        )
+    await message.answer(msg, parse_mode="MarkdownV2")
 
 
 async def all_active(message: types.Message):
@@ -207,11 +207,11 @@ async def get_msg(message: types.ContentType.ANY, state: FSMContext):
         # if message.media_group_id:
         #     await bot.send_media_group(uid, gr)
         await message.answer("✅ Повідомлення успішно надіслано")
-    except aiogram.utils.exceptions.ChatNotFound:
+    except exceptions.ChatNotFound:
         await message.answer(
             "❗️ Повідомлення не надіслано\n" + "❌ Не знайдено чат для відправлення"
         )
-    except aiogram.utils.exceptions.BotBlocked:
+    except exceptions.BotBlocked:
         await message.answer(
             "❗️ Повідомлення не надіслано\n" + "⛔️ Користувач заблокував бота"
         )
@@ -236,11 +236,9 @@ async def send_msg_user(message: types.Message):
 
 def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(admin, commands="admin", user_id=config("ADMIN_ID"))
+    dp.register_message_handler(stats, commands="stats", user_id=config("ADMIN_ID"))
     dp.register_message_handler(
-        all_stats, commands="all_stats", user_id=config("ADMIN_ID")
-    )
-    dp.register_message_handler(
-        last_activity, commands="last_activity", user_id=config("ADMIN_ID")
+        activity, commands="activity", user_id=config("ADMIN_ID")
     )
     dp.register_message_handler(
         last_users, commands="last_users", user_id=config("ADMIN_ID")
