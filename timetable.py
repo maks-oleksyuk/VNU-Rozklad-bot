@@ -278,7 +278,6 @@ async def multy_replase(txt):
     txt = txt.replace(" (за професійним спрямуванням)", "")
     characters = {
         ".": "\.",
-        "_": "\_",
         ":": "\:",
         "-": "\-",
         "+": "\+",
