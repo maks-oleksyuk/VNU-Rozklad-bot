@@ -69,7 +69,7 @@ async def answer(message: types.Message, option, data=None):
         case "set-date":
             await message.answer(
                 "📆 *Введіть дату:*\n"
-                + "☝️ Найкращий варіант – `YYYY-mm-dd`\n"
+                + "☝️ Найкращий варіант – `dd.mm`\n"
                 + "але доступно також багато інших\n\n"
                 + "/cancel – для відміни",
                 parse_mode="MarkdownV2")
@@ -77,7 +77,7 @@ async def answer(message: types.Message, option, data=None):
             await message.answer(
                 "❗️ *Невірний формат дати* ❗️\n"
                 + "🌀 Повторіть спробу ще раз\n\n"
-                + "☝️ Найкращий варіант – `YYYY-mm-dd`\n\n"
+                + "☝️ Найкращий варіант – `dd.mm`\n\n"
                 + "/cancel – для відміни",
                 parse_mode="MarkdownV2")
         case "cancel-date":

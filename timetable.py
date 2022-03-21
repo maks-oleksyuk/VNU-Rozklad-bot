@@ -278,6 +278,7 @@ async def multy_replase(txt):
     txt = txt.replace(" (за професійним спрямуванням)", "")
     characters = {
         ".": "\.",
+        "_": "\_",
         ":": "\:",
         "-": "\-",
         "+": "\+",
@@ -285,6 +286,7 @@ async def multy_replase(txt):
         ")": "\)",
         "|": "\|",
         "!": "\!",
+        "#": "\#",
     }
     transTable = txt.maketrans(characters)
     txt = txt.translate(transTable)

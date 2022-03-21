@@ -119,16 +119,18 @@ async def admin_data(option, data=None):
             res = cur.fetchone()
         case "last-users":
             cur.execute("""
-                SELECT last_active, uid, name 
-                FROM users
-                WHERE last_active >= CURRENT_DATE
-                ORDER BY last_active""")
+                SELECT * FROM (
+                    SELECT last_active, uid, name 
+                    FROM users
+                    WHERE last_active >= CURRENT_DATE
+                    ORDER BY last_active DESC
+                    LIMIT 50) AS T
+                ORDER BY last_active ASC""")
             res = cur.fetchall()
-        case "all-active":
+        case "all-users":
             cur.execute("""
-                SELECT last_active, uid, name, data_name 
+                SELECT last_active, uid, status, data_name, name 
                 FROM users
-                WHERE status = TRUE
                 ORDER BY last_active DESC""")
             res = cur.fetchall()
         case "user-uid":

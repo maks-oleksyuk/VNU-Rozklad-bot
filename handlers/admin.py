@@ -1,3 +1,6 @@
+import os
+from subprocess import call
+
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -5,6 +8,8 @@ from aiogram.utils import exceptions
 from config import bot
 from database import admin_data
 from decouple import config
+from keyboard import inline
+from message import answer
 from timetable import multy_replase
 
 
@@ -18,8 +23,8 @@ async def admin(message: types.Message):
         "*Список команд адміна:*\n\n"
         + "/stats – Загальна статистика\n"
         + "/activity – Активність користувачів\n"
+        + "/all\_users – Список всіх користувачів\n"
         + "/last\_users – UID останіх користувачів\n"
-        + "/all\_active – Список всіх активних користувачів\n"
         + "/send\_msg – Надіслати повідомлення\n",
         parse_mode="MarkdownV2",
     )
@@ -71,12 +76,12 @@ async def last_users(message: types.Message):
     """
     res = await admin_data("last-users")
     msg = (
-        "*Користувачів сьогодні – {}*\n\n`"
-        + " TIME ┃        UID ┃ NAME\n"
-        + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`\n"
-    ).format(len(res))
+        "*Останні 50 користувачів*\n\n`"
+        + "   TIME  ┃        UID ┃ NAME\n"
+        + "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`\n"
+    )
     for r in res:
-        time = r[0].strftime("%H\:%M")
+        time = r[0].strftime("%H\:%M\:%S")
         empty = (10 - len(str(r[1]))) * " "
         name = await multy_replase(r[2])
         msg += "`{} ┃ {}{} ┃ `[{}](tg://user?id={})\n".format(
@@ -85,19 +90,31 @@ async def last_users(message: types.Message):
     await message.answer(msg, parse_mode="MarkdownV2")
 
 
-async def all_active(message: types.Message):
-    res = await admin_data("all-active")
-    mes = (
-        "*Активних користувачів – "
-        + str(len(res))
-        + "\n\nDATE       |  UID               |  NAME and DATA*\n"
-        + "————————————————————————\n"
+async def all_users(message: types.Message):
+    """Send a file with user data
+
+    Args:
+        message (types.Message): This object represents a message.
+    """
+    res = await admin_data("all-users")
+    msg = (
+        "DATE     ┃        UID ┃ STATUS ┃ DATA                      ┃ NAME\n"
+        + "━" * 100
+        + "\n"
     )
+    users = open("all-users.txt", "w+")
+    users.write(msg)
     for r in res:
         date = r[0].strftime("%m.%d.%y")
-        mes += date + "  |  " + str(r[1]) + "  |  " + r[2] + " – " + str(r[3]) + "\n"
-    mes = await multy_replase(mes)
-    await message.answer(mes, parse_mode="MarkdownV2")
+        e1 = (10 - len(str(r[1]))) * " "
+        e2 = (25 - len(str(r[3]))) * " "
+        msg = "{} ┃ {}{} ┃  {}  ┃ {}{} ┃ {}\n".format(
+            date, e1, r[1], r[2], r[3], e2, r[4]
+        )
+        users.write(msg)
+    users.close()
+    await bot.send_document(config("ADMIN_ID"), open("all-users.txt", "r"))
+    os.remove("all-users.txt")
 
 
 # -----------------------------------------------------------
@@ -224,9 +241,35 @@ async def get_msg(message: types.ContentType.ANY, state: FSMContext):
     await state.finish()
 
 
-async def send_msg_user(message: types.Message):
-    await message.answer("🆔 Введіть UID користувача Telegram")
-    await FSMSendMsg.uid.set()
+async def send_msg(message: types.Message):
+    info = (
+        " Я можу надіслати наступне:\n"
+        + "  • відео\n"
+        + "  • стікер\n"
+        + "  • голосове\n"
+        + "  • зображення\n"
+        + "  • аудіо (mp3)\n"
+        + "  • відео (кружок)\n"
+        + "  • анімацію (gif)\n\n"
+        + "Для кого надсилати повідомлення❔"
+    )
+    await message.answer(info, reply_markup=await inline("who"))
+    # await FSMSendMsg.uid.set()
+
+
+async def callback(call: True):
+    if call.data == "all":
+        msg = (
+            "*Повідомлення буде надіслане всім користувачам*\n\n"
+            + "Очікую повідомлення\.\.\."
+        )
+        await call.message.edit_text(msg, parse_mode="MarkdownV2")
+        pass
+    elif call.data == "group":
+        pass
+    elif call.data == "user":
+        pass
+    await call.answer()
 
 
 # -----------------------------------------------------------
@@ -241,13 +284,13 @@ def register_handlers_admin(dp: Dispatcher):
         activity, commands="activity", user_id=config("ADMIN_ID")
     )
     dp.register_message_handler(
+        all_users, commands="all_users", user_id=config("ADMIN_ID")
+    )
+    dp.register_message_handler(
         last_users, commands="last_users", user_id=config("ADMIN_ID")
     )
     dp.register_message_handler(
-        all_active, commands="all_active", user_id=config("ADMIN_ID")
-    )
-    dp.register_message_handler(
-        send_msg_user, commands="send_msg_user", user_id=config("ADMIN_ID")
+        send_msg, commands="send_msg", user_id=config("ADMIN_ID")
     )
     dp.register_message_handler(
         cancel_send,
@@ -277,3 +320,4 @@ def register_handlers_admin(dp: Dispatcher):
             "sticker",
         ],
     )
+    dp.register_callback_query_handler(callback)

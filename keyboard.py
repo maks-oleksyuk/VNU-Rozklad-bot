@@ -1,5 +1,8 @@
 from aiogram import types
-from aiogram.types import KeyboardButton as kb, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardButton as ikb
+from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import KeyboardButton as kb
+from aiogram.types import ReplyKeyboardMarkup
 
 from config import (chair, faculty, get_groups_by_faculty,
                     get_teachers_by_chair, search_group, search_teacher)
@@ -63,4 +66,14 @@ async def setKeyboard(option, message: types.Message = None):
             markup.row(days[0], days[1], days[2], days[3], days[4], days[5], days[6])
             markup.row("⬅️ тиждень", "сьогодні", "тиждень ➡️")
             markup.row("Змінити запит", "На тиждень", "📆 Ввести дату")
+    return markup
+
+async def inline(option, message: types.Message = None):
+    markup = InlineKeyboardMarkup()
+    match option:
+        case "who":
+            all = ikb("Всім", callback_data='all')
+            group = ikb("Групі", callback_data='group')
+            user = ikb("За UID", callback_data='user')
+            markup.row(all, group, user)
     return markup
