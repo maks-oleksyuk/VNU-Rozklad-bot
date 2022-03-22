@@ -1,4 +1,3 @@
-from time import strftime
 from aiogram import types
 from decouple import config
 

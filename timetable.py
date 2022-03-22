@@ -1,10 +1,10 @@
-from aiogram import types
-
 from datetime import date, datetime, time, timedelta
 
-from config import get_teacher_full_name, week
-from request import get_schedule
+from aiogram import types
+
+from config import get_teacher_full_name, multy_replase, week
 from database import schedule_data
+from request import get_schedule
 
 
 async def schedule(message: types.Message, mode, id):
@@ -264,29 +264,3 @@ async def has_need_group(txt):
         return True
     else:
         return False
-
-
-async def multy_replase(txt):
-    """Formatting special characters for MarkdownV2
-
-    Args:
-        txt (str): text to be formatted
-
-    Returns:
-        str: original, already formatted text
-    """
-    txt = txt.replace(" (за професійним спрямуванням)", "")
-    characters = {
-        ".": "\.",
-        ":": "\:",
-        "-": "\-",
-        "+": "\+",
-        "(": "\(",
-        ")": "\)",
-        "|": "\|",
-        "!": "\!",
-        "#": "\#",
-    }
-    transTable = txt.maketrans(characters)
-    txt = txt.translate(transTable)
-    return txt

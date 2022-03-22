@@ -180,3 +180,22 @@ async def is_date(string, fuzzy=False):
 
     except ValueError:
         return False
+
+
+async def multy_replase(text, all=None):
+    """Formatting special characters for MarkdownV2.
+
+    Args:
+        text (str): Text to be formatted.
+        all (bool, optional): If need replase all characters. Defaults to None.
+
+    Returns:
+        _type_: Formatted text in MarkdownV2.
+    """
+    text = text.replace(" (за професійним спрямуванням)", "")
+    chars = "[]()>#+-={|}.!"
+    if all:
+        chars += "_*~`"
+    for c in chars:
+        text = text.replace(c, "\\" + c)
+    return text

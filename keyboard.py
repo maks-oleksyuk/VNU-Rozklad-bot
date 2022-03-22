@@ -76,4 +76,11 @@ async def inline(option, message: types.Message = None):
             group = ikb("Групі", callback_data='group')
             user = ikb("За UID", callback_data='user')
             markup.row(all, group, user)
+        case "back":
+            back = ikb("⬅️ Назад", callback_data='back')
+            markup.add(back)
+        case "confirm":
+            cancel = ikb("Скасувати ❌", callback_data='cancel')
+            confirm = ikb("Підтвердити ✅", callback_data='confirm')
+            markup.add(cancel, confirm)
     return markup
