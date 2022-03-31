@@ -230,6 +230,7 @@ class FSMSendMsg(StatesGroup):
 
 async def get_msg(message: types.ContentType.ANY, state: FSMContext):
     await state.update_data(msg=message)
+    # fff = await messages.getMessages()
     await send_all(message, None)
     await bot.delete_message(message.chat.id, message.message_id - 1)
     await bot.delete_message(message.chat.id, message.message_id)
@@ -241,9 +242,12 @@ async def get_msg(message: types.ContentType.ANY, state: FSMContext):
 async def send_all(
     message: types.Message, state: FSMContext, data=[config("ADMIN_ID")], all=True
 ):
+    chat = config("ADMIN_ID")
     if state:
         user_data = await state.get_data()
         message = user_data["msg"]
+        message.message_id = message.message_id + 1
+        chat = message.from_user.id
     if all:
         data = [config("ADMIN_ID")]
     for uid in data:
@@ -252,58 +256,9 @@ async def send_all(
                 text = message.html_text
             except:
                 text = ""
-            if message.animation:
-                await bot.send_animation(
-                    uid,
-                    message.animation.file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-            if message.audio:
-                await bot.send_audio(
-                    uid,
-                    message.audio.file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-            if message.document and not message.animation:
-                await bot.send_document(
-                    uid,
-                    message.document.file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-            if message.photo:
-                await bot.send_photo(
-                    uid,
-                    message.photo[0].file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-            if message.sticker:
-                await bot.send_sticker(uid, message.sticker.file_id)
-            if message.text:
-                await bot.send_message(uid, text, parse_mode="HTML")
-            if message.video:
-                await bot.send_video(
-                    uid,
-                    message.video.file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-            if message.video_note:
-                await bot.send_video_note(uid, message.video_note.file_id)
-            if message.voice:
-                await bot.send_voice(
-                    uid,
-                    message.voice.file_id,
-                    caption=text,
-                    parse_mode="HTML",
-                )
-        #         # TODO Доробити надсилання media_group
-        #         # if message.media_group_id:
-        #         #     await bot.send_media_group(uid, gr)
-        #         await message.answer("✅ Повідомлення успішно надіслано")
+            await bot.copy_message(
+                uid, chat, message.media_group_id, text, parse_mode="HTML"
+            )
         except exceptions.ChatNotFound:
             # await message.answer(
             #     "❗️ Повідомлення не надіслано\n" + "❌ Не знайдено чат для відправлення"
