@@ -88,7 +88,7 @@ async def answer(message: types.Message, option, data=None):
                 + "якщо виникнуть якісь проблеми або питання\n"
                 + "не соромся, пиши [сюди](tg://user?id=" + str(config("ADMIN_ID"))+ "), він допоможе 😎\n\n"
                 + "*🎨 Велике дякую* [Tim Boniuk](https://t.me/timboniuk) за чудовий аватар\n\n"
-                + "[🇺🇦 Підтримати ЗСУ](https://send.monobank.ua/8mZyo57Cpu)",
+                + "[🇺🇦 Підтримати ЗСУ](https://savelife.in.ua/donate/)",
                 disable_web_page_preview=True,
                 parse_mode="MarkdownV2")
         case "help":
