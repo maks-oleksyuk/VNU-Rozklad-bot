@@ -29,7 +29,8 @@ async def user_data(message: types.Message, option, data):
             cur.execute("SELECT data_id, data_name, data_type, data_date FROM users WHERE uid = %s", [uid])
             res = cur.fetchone()
             return res
-
+        case 'update-status':
+            cur.execute("UPDATE users SET status = %s WHERE uid = %s", data)
     base.commit()
 
 
@@ -136,6 +137,9 @@ async def admin_data(option, data=None):
         case "user-uid":
             cur.execute("SELECT name FROM users WHERE uid = %s", [data])
             res = cur.fetchone()
+        case "students-uid":
+            cur.execute("SELECT uid FROM users WHERE data_type = 'group'")
+            res = cur.fetchall()
     base.commit()
     return res
 

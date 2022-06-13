@@ -232,8 +232,8 @@ async def get_msg(message: types.ContentType.ANY, state: FSMContext):
     await state.update_data(msg=message)
     # fff = await messages.getMessages()
     await send_all(message, None)
-    await bot.delete_message(message.chat.id, message.message_id - 1)
-    await bot.delete_message(message.chat.id, message.message_id)
+    # await bot.delete_message(message.chat.id, message.message_id - 1)
+    # await bot.delete_message(message.chat.id, message.message_id)
     await message.answer(
         "Таке повідомлення отримає користувач", reply_markup=await inline("confirm")
     )
