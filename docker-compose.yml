@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    restart: always
+    command: python /bot.py
+    container_name: vnu-bot
+    depends_on:
+      - db
+  db:
+    image: postgres:15rc2
+    restart: always
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
