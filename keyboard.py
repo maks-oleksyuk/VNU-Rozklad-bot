@@ -68,6 +68,7 @@ async def setKeyboard(option, message: types.Message = None):
             markup.row("Змінити запит", "На тиждень", "📆 Ввести дату")
     return markup
 
+
 async def inline(option, message: types.Message = None):
     markup = InlineKeyboardMarkup()
     match option:
