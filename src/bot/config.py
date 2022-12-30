@@ -1,21 +1,26 @@
 import json
 from datetime import date
 
+from os import getenv
 import psycopg2 as ps
 from aiogram import Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
-from decouple import config
 
-# from request import get_chair, get_faculties
+from request import get_chair, get_faculties
 
 storage = MemoryStorage()
 
-# base = ps.connect(config("DATABASE_URL"), sslmode="require")
-# cur = base.cursor()
+base = ps.connect(
+    host="postgres",
+    user=getenv("DB_USER", default=""),
+    password=getenv("DB_PASS", default=""),
+    database=getenv("DB_NAME", default=""),
+)
+cur = base.cursor()
 
-bot = Bot(token=config("TOKEN", default=""))
+bot = Bot(token=getenv("TOKEN", default=""))
 dp = Dispatcher(bot, storage=storage)
 
 chair = []
@@ -26,8 +31,8 @@ week = ["Понеділок", "Вівторок", "Середа", "Четвер"
 
 async def on_startup(dp):
     print("Bot Started")
-    # await get_chair()
-    # await get_faculties()
+    await get_chair()
+    await get_faculties()
     with open("json/chair.min.json") as f:
         text = json.loads(f.read())
         for d in text["psrozklad_export"]["departments"]:
@@ -40,8 +45,8 @@ async def on_startup(dp):
 
 async def on_shutduwn(dp):
     print('close')
-    # cur.close()
-    # base.close()
+    cur.close()
+    base.close()
 
 
 async def get_groups_by_faculty(faculty):

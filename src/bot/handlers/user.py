@@ -3,12 +3,13 @@ from datetime import date
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from config import (chair, faculty, get_group_id, get_teacher_id, is_date,
-                    search_group, search_teacher)
-from database import user_data
-from message import answer, reply
+from bot.config import (chair, faculty, get_group_id, get_teacher_id, is_date,
+                        search_group, search_teacher)
+from bot.database import user_data
+from bot.message import answer, reply
 
-from handlers import sched_cmd
+from bot.handlers import sched_cmd
+
 
 # -----------------------------------------------------------
 # Implementation of basic handlers
@@ -53,14 +54,15 @@ async def cancel(message: types.Message, state: FSMContext):
     await user_data(message, "save", None)
     await answer(message, "choice", None)
 
+
 # -----------------------------------------------------------
 # Implementation of the branch of development for the student
 # -----------------------------------------------------------
 
 class FSMStudent(StatesGroup):
     faculty = State()
-    group   = State()
-    search  = State()
+    group = State()
+    search = State()
 
 
 async def setStudentFaculty(message: types.Message, state: FSMContext):
@@ -73,12 +75,14 @@ async def setStudentFaculty(message: types.Message, state: FSMContext):
     else:
         await setGroupSearch(message, state)
 
+
 async def setStudentGroup(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await FSMStudent.faculty.set()
         await answer(message, "faculty")
     else:
         await setGroupSearch(message, state)
+
 
 async def setGroupSearch(message: types.Message, state: FSMContext):
     await FSMStudent.search.set()
@@ -88,8 +92,8 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
     else:
         gr = await search_group(message.text)
         if len(gr) == 1:
-            await state.finish() 
-            arr_data = await get_group_id(gr[0]) + ["group", date.today()] 
+            await state.finish()
+            arr_data = await get_group_id(gr[0]) + ["group", date.today()]
             await user_data(message, "save", None)
             await user_data(message, "data", arr_data)
             await sched_cmd.today(message)
@@ -99,21 +103,23 @@ async def setGroupSearch(message: types.Message, state: FSMContext):
             await FSMStudent.faculty.set()
             await reply(message, "fail-search-group")
 
+
 # -----------------------------------------------------------
 # Implementation of the branch of development for the teacher
 # -----------------------------------------------------------
 
-class FSMTeaсher(StatesGroup):
-    chair   = State()
+class FSMTeacher(StatesGroup):
+    chair = State()
     surname = State()
-    search  = State()
+    search = State()
 
-async def setTeaсherChair(message: types.Message, state: FSMContext):
+
+async def setTeacherChair(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await state.finish()
         await cancel(message, state)
     elif message.text in chair:
-        await FSMTeaсher.next()
+        await FSMTeacher.next()
         await answer(message, "surname")
     else:
         await setTeacherSearch(message, state)
@@ -121,16 +127,16 @@ async def setTeaсherChair(message: types.Message, state: FSMContext):
 
 async def setTeacherSurname(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
-        await FSMTeaсher.chair.set()
+        await FSMTeacher.chair.set()
         await answer(message, "chair")
     else:
         await setTeacherSearch(message, state)
 
 
 async def setTeacherSearch(message: types.Message, state: FSMContext):
-    await FSMTeaсher.search.set()
+    await FSMTeacher.search.set()
     if message.text == "⬅️ Назад":
-        await FSMTeaсher.chair.set()
+        await FSMTeacher.chair.set()
         await answer(message, "chair")
     else:
         tr = await search_teacher(message.text)
@@ -143,7 +149,7 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
         elif len(tr) > 1:
             await reply(message, "good-search-teacher")
         else:
-            await FSMTeaсher.chair.set()
+            await FSMTeacher.chair.set()
             await reply(message, "fail-search-teacher")
 
 
@@ -154,9 +160,11 @@ async def setTeacherSearch(message: types.Message, state: FSMContext):
 class FSMSetDate(StatesGroup):
     set_date = State()
 
+
 async def cancel_date(message: types.Message, state: FSMSetDate):
     await state.finish()
     await answer(message, "cancel-date")
+
 
 async def set_date(message: types.Message, state: FSMContext):
     new_date = await is_date(message.text)
@@ -184,15 +192,16 @@ async def setdate(message: types.Message):
 # -----------------------------------------------------------
 
 def register_handlers_user(dp: Dispatcher):
-    dp.register_message_handler(start,                                           chat_type = types.ChatType.PRIVATE, commands = "start")
-    dp.register_message_handler(cancel_date,       state = FSMSetDate.set_date,  chat_type = types.ChatType.PRIVATE, commands = "cancel")
-    dp.register_message_handler(cancel,            state = "*",                  chat_type = types.ChatType.PRIVATE, commands = "cancel",)
-    dp.register_message_handler(setdate,                                         chat_type = types.ChatType.PRIVATE, commands = "setdate")
-    dp.register_message_handler(text,                                            chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setStudentFaculty, state = FSMStudent.faculty,   chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeaсherChair,   state = FSMTeaсher.chair,     chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setStudentGroup,   state = FSMStudent.group,     chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeacherSurname, state = FSMTeaсher.surname,   chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setGroupSearch,    state = FSMStudent.search,    chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeacherSearch,  state = FSMTeaсher.search,    chat_type = types.ChatType.PRIVATE)
-    dp.register_message_handler(set_date,          state = FSMSetDate.set_date,  chat_type = types.ChatType.PRIVATE)
+    dp.register_message_handler(start, chat_type=types.ChatType.PRIVATE, commands="start")
+    dp.register_message_handler(cancel_date, state=FSMSetDate.set_date, chat_type=types.ChatType.PRIVATE,
+                                commands="cancel")
+    dp.register_message_handler(cancel, state="*", chat_type=types.ChatType.PRIVATE, commands="cancel", )
+    dp.register_message_handler(setdate, chat_type=types.ChatType.PRIVATE, commands="setdate")
+    dp.register_message_handler(text, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setStudentFaculty, state=FSMStudent.faculty, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setTeacherChair, state=FSMTeacher.chair, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setStudentGroup, state=FSMStudent.group, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setTeacherSurname, state=FSMTeacher.surname, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setGroupSearch, state=FSMStudent.search, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(setTeacherSearch, state=FSMTeacher.search, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(set_date, state=FSMSetDate.set_date, chat_type=types.ChatType.PRIVATE)

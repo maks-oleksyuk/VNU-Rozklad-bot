@@ -1,5 +1,7 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name="VNU_Rozklad_bot", version="0.1", packages=["bot"],
+    name="VNU Rozklad bot",
+    version="0.1.dev",
+    packages=find_packages(),
 )

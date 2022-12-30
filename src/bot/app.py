@@ -1,14 +1,16 @@
 from aiogram.utils import executor
-
 from config import dp, on_shutduwn, on_startup
-from handlers import admin, cmd, sched_cmd, user
+from handlers import cmd, sched_cmd, user
 
 sched_cmd.register_handlers_schedule_commands(dp)
-admin.register_handlers_admin(dp)
+# admin.register_handlers_admin(dp)
 cmd.register_handlers_schedule_commands(dp)
 user.register_handlers_user(dp)
 
 if __name__ == "__main__":
     executor.start_polling(
-        dispatcher=dp, skip_updates=True, on_startup=on_startup, on_shutdown=on_shutduwn
+        dispatcher=dp,
+        skip_updates=True,
+        on_startup=on_startup,
+        on_shutdown=on_shutduwn
     )

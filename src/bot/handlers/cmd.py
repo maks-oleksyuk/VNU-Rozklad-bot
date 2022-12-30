@@ -1,5 +1,5 @@
 from aiogram import Dispatcher, types
-from message import answer
+from bot.message import answer
 
 
 async def help(message: types.Message):

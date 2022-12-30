@@ -10,7 +10,7 @@ from database import user_data
 
 
 async def setKeyboard(option, message: types.Message = None):
-    """Return the keyboard for the required variant 
+    """Return the keyboard for the required variant
 
     Args:
         message (types.Message): Message with additional data
@@ -28,19 +28,19 @@ async def setKeyboard(option, message: types.Message = None):
         case "faculty":
             markup.add(b_back)
             for b in faculty:
-               markup.add(kb(text=b))
+                markup.add(kb(text=b))
         case "chair":
             markup.add(b_back)
             for b in chair:
-               markup.add(kb(text=b))
+                markup.add(kb(text=b))
         case "group":
             markup.add(b_back)
             groups = await get_groups_by_faculty(message.text)
             for i in range(0, len(groups), 2):
-                if i == len(groups)-1:
+                if i == len(groups) - 1:
                     markup.add(kb(text=groups[i]))
                 else:
-                    markup.row(kb(text=groups[i]), kb(text=groups[i+1]))
+                    markup.row(kb(text=groups[i]), kb(text=groups[i + 1]))
         case "surname":
             markup.add(b_back)
             teachers = await get_teachers_by_chair(message.text)
@@ -49,11 +49,11 @@ async def setKeyboard(option, message: types.Message = None):
         case "search-group":
             markup.add(b_back)
             res = await search_group(message.text)
-            for i  in range(0, len(res), 2):
-                if i == len(res)-1:
+            for i in range(0, len(res), 2):
+                if i == len(res) - 1:
                     markup.add(kb(text=res[i]))
                 else:
-                    markup.row(kb(text=res[i]), kb(text=res[i+1]))
+                    markup.row(kb(text=res[i]), kb(text=res[i + 1]))
         case "search-teacher":
             markup.add(b_back)
             res = await search_teacher(message.text)

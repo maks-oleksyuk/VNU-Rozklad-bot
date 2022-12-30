@@ -30,8 +30,8 @@ async def schedule(message: types.Message, mode, id):
     res = await get_schedule(id[0], mode)
     # Generation of the schedule on successful request
     if (
-        res["psrozklad_export"]["code"] == "0"
-        and len(res["psrozklad_export"]["roz_items"]) != 0
+            res["psrozklad_export"]["code"] == "0"
+            and len(res["psrozklad_export"]["roz_items"]) != 0
     ):
         schedule_arr.append(True)
         for d in range(14):
@@ -48,7 +48,7 @@ async def schedule(message: types.Message, mode, id):
                     if has_item != i["date"]:
                         has_item = i["date"]
                         week_message += (
-                            "\n\n🔅 _*" + i["date"][:5] + " " + week[d] + "*_"
+                                "\n\n🔅 _*" + i["date"][:5] + " " + week[d] + "*_"
                         )
                     item = await add_lesson(item, i, lsn)
                     week_message = await add_week_lesson(week_message, i, lsn, mode)
@@ -67,9 +67,9 @@ async def schedule(message: types.Message, mode, id):
     if not res:
         await schedule_data(message, "save", schedule_arr)
     elif (
-        schedule_arr[5]
-        or (not schedule_arr[5] and res[6] and SD > res[5])
-        or (not schedule_arr[5] and res[6] and SD == res[4])
+            schedule_arr[5]
+            or (not schedule_arr[5] and res[6] and SD > res[5])
+            or (not schedule_arr[5] and res[6] and SD == res[4])
     ):
         await schedule_data(message, "update", schedule_arr)
     elif not schedule_arr[5] and res[6] and SD < res[5] and SD > res[4]:
@@ -94,16 +94,16 @@ async def schedule_for_the_date(message: types.Message, mode, tid, date):
     if mode == "teacher":
         ttype = "💼 *Розклад викладача `" + tid[1]
     mes = (
-        ttype
-        + "`\n🔹 на "
-        + date.strftime("%d.%m.%Y")
-        + " ("
-        + week[date.weekday()]
-        + ")*"
+            ttype
+            + "`\n🔹 на "
+            + date.strftime("%d.%m.%Y")
+            + " ("
+            + week[date.weekday()]
+            + ")*"
     )
     if (
-        res["psrozklad_export"]["code"] == "0"
-        and len(res["psrozklad_export"]["roz_items"]) != 0
+            res["psrozklad_export"]["code"] == "0"
+            and len(res["psrozklad_export"]["roz_items"]) != 0
     ):
         lsn = 0
         for i in res["psrozklad_export"]["roz_items"]:
@@ -131,8 +131,8 @@ async def now_subject(message: types.Message, mode, tid):
     mes = ""
     has = 0
     if (
-        res["psrozklad_export"]["code"] == "0"
-        and len(res["psrozklad_export"]["roz_items"]) != 0
+            res["psrozklad_export"]["code"] == "0"
+            and len(res["psrozklad_export"]["roz_items"]) != 0
     ):
         name = res["psrozklad_export"]["roz_items"][0]["object"]
         if mode == "group":
@@ -195,11 +195,11 @@ async def add_lesson(mes, ls, lsn):
         mes += "\n"
     else:
         mes += (
-            "\n\n🔅 _"
-            + ls["lesson_number"]
-            + " Пара ("
-            + ls["lesson_time"].replace("-", " - ")
-            + ")_\n"
+                "\n\n🔅 _"
+                + ls["lesson_number"]
+                + " Пара ("
+                + ls["lesson_time"].replace("-", " - ")
+                + ")_\n"
         )
     if ls["reservation"]:
         mes += "📌 __*" + ls["reservation"] + "*__"
@@ -257,9 +257,9 @@ async def has_need_group(txt):
         bool: True if found and False if not
     """
     if (
-        txt.find("підгр.") != -1
-        or txt.find("част. групи") != -1
-        or txt.find("Збірна група") != -1
+            txt.find("підгр.") != -1
+            or txt.find("част. групи") != -1
+            or txt.find("Збірна група") != -1
     ):
         return True
     else:

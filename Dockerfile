@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 ARG PYTHON_TAG
 
 FROM python:${PYTHON_TAG}
@@ -13,4 +15,4 @@ RUN pip install -e /src
 
 WORKDIR /src
 
-CMD ["python", "./bot/entrypoints/app.py"]
+CMD ["python", "./bot/app.py"]

@@ -1,10 +1,10 @@
 from datetime import date, timedelta
 
 from aiogram import Dispatcher, types
-from config import get_column
-from message import answer
-from database import schedule_data, user_data
-from timetable import now_subject, schedule, schedule_for_the_date
+from bot.config import get_column
+from bot.message import answer
+from bot.database import schedule_data, user_data
+from bot.timetable import now_subject, schedule, schedule_for_the_date
 
 
 async def now(message: types.Message):

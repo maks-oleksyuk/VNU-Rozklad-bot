@@ -1,15 +1,17 @@
-version: "3"
+version: "3.9"
 
 services:
   postgres:
-    image: wodby/postgres:$POSTGRES_TAG
+    image: postgres:$POSTGRES_TAG
     container_name: "${PROJECT_NAME}_postgres"
     stop_grace_period: 30s
     environment:
-      POSTGRES_PASSWORD: $DB_PASSWORD
       POSTGRES_DB: $DB_NAME
       POSTGRES_USER: $DB_USER
-  #  volumes:
+      POSTGRES_PASS: $DB_PASS
+    ports:
+      - "5432:5432"
+    volumes:
   #    - ./postgres-init:/docker-entrypoint-initdb.d # Place init file(s) here.
   #    - /path/to/postgres/data/on/host:/var/lib/postgresql/data # I want to manage volumes manually.
 
@@ -33,16 +35,13 @@ services:
         PYTHON_TAG: $PYTHON_TAG
     container_name: "${PROJECT_NAME}_python"
     environment:
-      DB_HOST: $DB_HOST
-      DB_USER: $DB_USER
-      DB_PASSWORD: $DB_PASSWORD
-      DB_NAME: $DB_NAME
-      DB_ENGINE: $DB_ENGINE
       TOKEN: $TOKEN
+      DB_USER: $DB_USER
+      DB_PASS: $DB_PASS
+      DB_NAME: $DB_NAME
+      ADMIN_ID: $ADMIN_ID
     volumes:
       - ./:/usr/src/app:cached
-  ## Alternative for macOS users: Mutagen https://wodby.com/docs/stacks/python/local#docker-for-mac
-  #    - backend:/usr/src/app
 
   nginx:
     image: wodby/nginx:$NGINX_TAG
@@ -62,14 +61,14 @@ services:
         #    - backend:/usr/src/app
         #    labels:
         #    - "traefik.http.routers.${PROJECT_NAME}_nginx.rule=Host(`${PROJECT_BASE_URL}`)"
-        
+
         #  mailhog:
         #    image: mailhog/mailhog
         #    container_name: "${PROJECT_NAME}_mailhog"
         #    labels:
         #    - "traefik.http.services.${PROJECT_NAME}_mailhog.loadbalancer.server.port=8025"
         #    - "traefik.http.routers.${PROJECT_NAME}_mailhog.rule=Host(`mailhog.${PROJECT_BASE_URL}`)"
-        
+
         #  varnish:
         #    image: wodby/varnish:$VARNISH_TAG
         #    container_name: "${PROJECT_NAME}_varnish"
@@ -83,11 +82,11 @@ services:
         #    labels:
         #    - "traefik.http.services.${PROJECT_NAME}_varnish.loadbalancer.server.port=6081"
         #    - "traefik.http.routers.${PROJECT_NAME}_varnish.rule=Host(`varnish.${PROJECT_BASE_URL}`)"
-        
+
         #  redis:
         #    container_name: "${PROJECT_NAME}_redis"
         #    image: wodby/redis:$REDIS_TAG
-        
+
         #  adminer:
         #    container_name: "${PROJECT_NAME}_adminer"
         #    image: wodby/adminer:$ADMINER_TAG
@@ -99,7 +98,7 @@ services:
         #      ADMINER_DEFAULT_DB_NAME: $DB_NAME
         #    labels:
         #    - "traefik.http.routers.${PROJECT_NAME}_adminer.rule=Host(`adminer.${PROJECT_BASE_URL}`)"
-        
+
         #  solr:
         #    image: wodby/solr:$SOLR_TAG
         #    container_name: "${PROJECT_NAME}_solr"
@@ -108,7 +107,7 @@ services:
         #    labels:
         #    - "traefik.http.services.${PROJECT_NAME}_solr.loadbalancer.server.port=8983"
         #    - "traefik.http.routers.${PROJECT_NAME}_solr.rule=Host(`solr.${PROJECT_BASE_URL}`)"
-        
+
         #  elasticsearch:
         #    image: wodby/elasticsearch:$ELASTICSEARCH_TAG
         #    environment:
@@ -117,7 +116,7 @@ services:
         #      memlock:
         #        soft: -1
         #        hard: -1
-        
+
         #  kibana:
         #    image: wodby/kibana:$KIBANA_TAG
         #    depends_on:
@@ -125,15 +124,15 @@ services:
         #    labels:
         #    - "traefik.http.services.${PROJECT_NAME}_kibana.loadbalancer.server.port=5601"
         #    - "traefik.http.routers.${PROJECT_NAME}_kibana.rule=Host(`kibana.${PROJECT_BASE_URL}`)"
-        
+
         #  memcached:
         #    container_name: "${PROJECT_NAME}_memcached"
         #    image: wodby/memcached:$MEMCACHED_TAG
-        
+
         #  rsyslog:
         #    container_name: "${PROJECT_NAME}_rsyslog"
         #    image: wodby/rsyslog:$RSYSLOG_TAG
-        
+
         #  athenapdf:
         #    image: arachnysdocker/athenapdf-service:$ATHENAPDF_TAG
         #    container_name: "${PROJECT_NAME}_athenapdf"
@@ -144,26 +143,26 @@ services:
         #      WEAVER_MAX_CONVERSION_QUEUE: 50
         #      WEAVER_WORKER_TIMEOUT: 90
         #      WEAVER_CONVERSION_FALLBACK: "false"
-        
-        #  node:
-        #    image: wodby/node:$NODE_TAG
-        #    container_name: "${PROJECT_NAME}_node"
-        #    working_dir: /app
-        #    labels:
-        #    - "traefik.http.services.${PROJECT_NAME}_node.loadbalancer.server.port=3000"
-        #    - "traefik.http.routers.${PROJECT_NAME}_node.rule=Host(`node.${PROJECT_BASE_URL}`)"
-        #    expose:
-        #    - "3000"
-        #    volumes:
-        #    - ./path/to/your/single-page-app:/app
-        #    command: sh -c 'npm install && npm run start'
-        
-        #  opensmtpd:
-        #    container_name: "${PROJECT_NAME}_opensmtpd"
-        #    image: wodby/opensmtpd:$OPENSMTPD_TAG
-        
-        #  traefik:
-        #    image: traefik:v2.0
+
+      #  node:
+      #    image: wodby/node:$NODE_TAG
+      #    container_name: "${PROJECT_NAME}_node"
+      #    working_dir: /app
+      #    labels:
+      #    - "traefik.http.services.${PROJECT_NAME}_node.loadbalancer.server.port=3000"
+      #    - "traefik.http.routers.${PROJECT_NAME}_node.rule=Host(`node.${PROJECT_BASE_URL}`)"
+      #    expose:
+      #    - "3000"
+      #    volumes:
+      #    - ./path/to/your/single-page-app:/app
+      #    command: sh -c 'npm install && npm run start'
+
+      #  opensmtpd:
+      #    container_name: "${PROJECT_NAME}_opensmtpd"
+      #    image: wodby/opensmtpd:$OPENSMTPD_TAG
+
+      #  traefik:
+      #    image: traefik:v2.0
       #    container_name: "${PROJECT_NAME}_traefik"
       #    command: --api.insecure=true --providers.docker
       #    ports:

@@ -5,9 +5,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import exceptions
 from bot.config import bot, multy_replase
-from database import admin_data
+from bot.database import admin_data
 from decouple import config
-from keyboard import inline
+from bot.keyboard import inline
 
 
 async def admin(message: types.Message):

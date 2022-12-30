@@ -13,7 +13,8 @@ async def user_data(message: types.Message, option, data):
             if not res:
                 cur.execute("INSERT INTO users (uid, name, status) VALUES (%s, %s, true)", [uid, name])
             else:
-                cur.execute("UPDATE users SET name = %s, status = true, last_active = default WHERE uid = %s", [name, uid])
+                cur.execute("UPDATE users SET name = %s, status = true, last_active = default WHERE uid = %s",
+                            [name, uid])
         case "data":
             data = [name] + data + [uid]
             cur.execute("""UPDATE users SET
@@ -43,9 +44,10 @@ async def schedule_data(message: types.Message, option, data):
         case "save":
             if data[5]:
                 cur.execute("""INSERT INTO timetable
-                VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", data)
+                VALUES (DEFAULT, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                            data)
             else:
-                cur.execute("INSERT INTO timetable VALUES (DEFAULT, %s, %s, %s, %s, %s, %s)", data)    
+                cur.execute("INSERT INTO timetable VALUES (DEFAULT, %s, %s, %s, %s, %s, %s)", data)
         case "update":
             data += [data.pop(0)]
             cur.execute("""UPDATE timetable SET
@@ -142,4 +144,3 @@ async def admin_data(option, data=None):
             res = cur.fetchall()
     base.commit()
     return res
-
