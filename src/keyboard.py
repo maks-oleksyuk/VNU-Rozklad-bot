@@ -6,7 +6,7 @@ from aiogram.types import ReplyKeyboardMarkup
 
 from config import (chair, faculty, get_groups_by_faculty,
                     get_teachers_by_chair, search_group, search_teacher)
-from database import user_data
+from database_old import user_data
 
 
 async def setKeyboard(option, message: types.Message = None):

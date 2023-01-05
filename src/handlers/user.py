@@ -15,12 +15,6 @@ from bot.handlers import sched_cmd
 # Implementation of basic handlers
 # -----------------------------------------------------------
 
-# Implementation of the handler for command /start
-async def start(message: types.Message):
-    await answer(message, "start")
-    await user_data(message, "save", None)
-
-
 # Implementation of a handler for text messages
 async def text(message: types.Message):
     match message.text:
@@ -192,7 +186,6 @@ async def setdate(message: types.Message):
 # -----------------------------------------------------------
 
 def register_handlers_user(dp: Dispatcher):
-    dp.register_message_handler(start, chat_type=types.ChatType.PRIVATE, commands="start")
     dp.register_message_handler(cancel_date, state=FSMSetDate.set_date, chat_type=types.ChatType.PRIVATE,
                                 commands="cancel")
     dp.register_message_handler(cancel, state="*", chat_type=types.ChatType.PRIVATE, commands="cancel", )

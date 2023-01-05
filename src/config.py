@@ -1,26 +1,16 @@
-import json
 from datetime import date
-
 from os import getenv
-import psycopg2 as ps
+
 from aiogram import Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
 
+import json
+from database.db_init import db_init, cur, base
 from request import get_chair, get_faculties
 
-from db.db_init import checkTableExists
-
 storage = MemoryStorage()
-
-base = ps.connect(
-    host="db",
-    user=getenv("DB_USER", default=""),
-    password=getenv("DB_PASS", default=""),
-    database=getenv("DB_NAME", default=""),
-)
-cur = base.cursor()
 
 bot = Bot(token=getenv("TOKEN", default=""))
 dp = Dispatcher(bot, storage=storage)
@@ -33,7 +23,7 @@ week = ["Понеділок", "Вівторок", "Середа", "Четвер"
 
 async def on_startup(dp):
     print("Bot Started")
-    await checkTableExists('users')
+    await db_init()
     await get_chair()
     await get_faculties()
     with open("json/chair.min.json") as f:
