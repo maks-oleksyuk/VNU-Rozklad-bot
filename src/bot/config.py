@@ -10,10 +10,12 @@ from dateutil.parser import parse
 
 from request import get_chair, get_faculties
 
+from db.db_init import checkTableExists
+
 storage = MemoryStorage()
 
 base = ps.connect(
-    host="postgres",
+    host="db",
     user=getenv("DB_USER", default=""),
     password=getenv("DB_PASS", default=""),
     database=getenv("DB_NAME", default=""),
@@ -31,6 +33,7 @@ week = ["Понеділок", "Вівторок", "Середа", "Четвер"
 
 async def on_startup(dp):
     print("Bot Started")
+    await checkTableExists('users')
     await get_chair()
     await get_faculties()
     with open("json/chair.min.json") as f:
