@@ -5,7 +5,7 @@ include .env
 default: up
 
 ## help	:	Print commands help.
-help : docker.mk
+help : Makefile
 	@sed -n 's/^##//p' $<
 
 ## up	:	Start up containers.

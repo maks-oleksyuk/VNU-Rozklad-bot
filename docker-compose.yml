@@ -2,31 +2,20 @@ version: '3.9'
 
 services:
   db:
-    image: postgres:$POSTGRES_TAG
+    image: mariadb:$MARIADB_TAG
     container_name: '${PROJECT_NAME}_db'
     stop_grace_period: 30s
     environment:
-      POSTGRES_DB: $DB_NAME
-      POSTGRES_USER: $DB_USER
-      POSTGRES_PASSWORD: $DB_PASS
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_ROOT_USER: $DB_ROOT_USER
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
     ports:
-      - '5432:5432'
-  #  volumes:
-  #    - ./postgres-init:/docker-entrypoint-initdb.d # Place init file(s) here.
-  #    - /path/to/postgres/data/on/host:/var/lib/postgresql/data # I want to manage volumes manually.
-
-  #  mariadb:
-  #    image: wodby/mariadb:$MARIADB_TAG
-  #    container_name: "${PROJECT_NAME}_mariadb"
-  #    stop_grace_period: 30s
-  #    environment:
-  #      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
-  #      MYSQL_DATABASE: $DB_NAME
-  #      MYSQL_USER: $DB_USER
-  #      MYSQL_PASSWORD: $DB_PASSWORD
-  #    volumes:
-  #    - ./mariadb-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
-  #    - /path/to/mariadb/data/on/host:/var/lib/mysql # I want to manage volumes manually.
+      - '3306:3306'
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
+    #  - /path/to/mariadb/data/on/host:/var/lib/mysql # I want to manage volumes manually.
 
   bot:
     build:
@@ -55,27 +44,27 @@ services:
         #      NGINX_BACKEND_HOST: python
         # Use this if you don't need Django's media/static locations.
         #NGINX_VHOST_PRESET: http-proxy
-        #    volumes:
-        #      - ./:/usr/src/app:cached
-        ## Alternative for macOS users: Mutagen https://wodby.com/docs/stacks/python/local#docker-for-mac
-        #    - backend:/usr/src/app
-        #    labels:
-        #    - "traefik.http.routers.${PROJECT_NAME}_nginx.rule=Host(`${PROJECT_BASE_URL}`)"
+      #    volumes:
+      #      - ./:/usr/src/app:cached
+      ## Alternative for macOS users: Mutagen https://wodby.com/docs/stacks/python/local#docker-for-mac
+      #    - backend:/usr/src/app
+      #    labels:
+      #    - "traefik.http.routers.${PROJECT_NAME}_nginx.rule=Host(`${PROJECT_BASE_URL}`)"
 
-        #  redis:
-        #    container_name: "${PROJECT_NAME}_redis"
-        #    image: wodby/redis:$REDIS_TAG
+      #  redis:
+      #    container_name: "${PROJECT_NAME}_redis"
+      #    image: wodby/redis:$REDIS_TAG
 
-        #  adminer:
-        #    container_name: "${PROJECT_NAME}_adminer"
-        #    image: wodby/adminer:$ADMINER_TAG
-        #    environment:
-        #      ADMINER_DEFAULT_DB_DRIVER: pgsql
-        ##      # For MariaDB:
-        ##      ADMINER_DEFAULT_DB_DRIVER: server
-        #      ADMINER_DEFAULT_DB_HOST: $DB_HOST
-        #      ADMINER_DEFAULT_DB_NAME: $DB_NAME
-        #    labels:
+      #  adminer:
+      #    container_name: "${PROJECT_NAME}_adminer"
+      #    image: wodby/adminer:$ADMINER_TAG
+      #    environment:
+      #      ADMINER_DEFAULT_DB_DRIVER: pgsql
+      ##      # For MariaDB:
+      ##      ADMINER_DEFAULT_DB_DRIVER: server
+      #      ADMINER_DEFAULT_DB_HOST: $DB_HOST
+      #      ADMINER_DEFAULT_DB_NAME: $DB_NAME
+      #    labels:
       #    - "traefik.http.routers.${PROJECT_NAME}_adminer.rule=Host(`adminer.${PROJECT_BASE_URL}`)"
 
       #  memcached:

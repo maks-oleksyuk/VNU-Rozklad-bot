@@ -1,24 +1,24 @@
 from os import getenv
 
-import psycopg2 as ps
+import mariadb
 
-base = ps.connect(
-    host="db",
-    user=getenv("DB_USER", default=""),
-    password=getenv("DB_PASS", default=""),
-    database=getenv("DB_NAME", default=""),
+con = mariadb.connect(
+    host='localhost',
+    user=getenv('DB_USER', default=''),
+    password=getenv('DB_PASS', default=''),
+    database=getenv('DB_NAME', default=''),
 )
-cur = base.cursor()
+cur = con.cursor()
 
 
 async def db_init():
-    if not await checkTableExists('users'):
-        await createTableUsers()
-    if not await checkTableExists('users_data'):
-        await createTableUsersData()
+    if not await check_table_exists('users'):
+        await create_table_users()
+    if not await check_table_exists('users_data'):
+        await create_table_users_data()
 
 
-async def checkTableExists(name: str) -> bool:
+async def check_table_exists(name: str) -> bool:
     try:
         cur.execute(f"""
             SELECT EXISTS(
@@ -33,7 +33,7 @@ async def checkTableExists(name: str) -> bool:
         return False
 
 
-async def createTableUsers():
+async def create_table_users():
     try:
         cur.execute("""
             CREATE TABLE public.users (
@@ -56,7 +56,7 @@ async def createTableUsers():
         print(f'DB Error: {e}')
 
 
-async def createTableUsersData():
+async def create_table_users_data():
     try:
         cur.execute("""
             CREATE TABLE public.users_data (
