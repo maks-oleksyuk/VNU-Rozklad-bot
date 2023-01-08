@@ -1,4 +1,10 @@
+import json
 from os import getenv
+
+from api.timetable_api import get_chair, get_faculties
+
+chair, faculty = [], []
+week = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'] * 2
 
 message = {
     'start': "👋 *Привіт\\!*\n\n"
@@ -24,5 +30,19 @@ message = {
 }
 
 
-async def getMessageByKey(key: str) -> str:
+async def get_message_by_key(key: str) -> str:
     return message.get(key, '⏳')
+
+
+async def departments_init():
+    await get_chair()
+    with open('./../json/chair.min.json') as f:
+        text = json.loads(f.read())
+    for d in text['psrozklad_export']['departments']:
+        chair.append(d['name'])
+
+    await get_faculties()
+    with open('./../json/faculties.min.json') as f:
+        text = json.loads(f.read())
+        for d in text['psrozklad_export']['departments']:
+            faculty.append(d['name'])

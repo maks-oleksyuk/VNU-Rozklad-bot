@@ -11,8 +11,9 @@ services:
       MYSQL_DATABASE: $DB_NAME
       MYSQL_ROOT_USER: $DB_ROOT_USER
       MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
+      TZ: 'Europe/Kiev'
     ports:
-      - '3306:3306'
+      - '1229:3306'
     volumes:
       - ./db-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
     #  - /path/to/mariadb/data/on/host:/var/lib/mysql # I want to manage volumes manually.
@@ -39,11 +40,11 @@ services:
         #      - python
         #    environment:
         #      NGINX_STATIC_OPEN_FILE_CACHE: "off"
-        #      NGINX_ERROR_LOG_LEVEL: debug
-        #      NGINX_VHOST_PRESET: django
-        #      NGINX_BACKEND_HOST: python
-        # Use this if you don't need Django's media/static locations.
-        #NGINX_VHOST_PRESET: http-proxy
+      #      NGINX_ERROR_LOG_LEVEL: debug
+      #      NGINX_VHOST_PRESET: django
+      #      NGINX_BACKEND_HOST: python
+      # Use this if you don't need Django's media/static locations.
+      #NGINX_VHOST_PRESET: http-proxy
       #    volumes:
       #      - ./:/usr/src/app:cached
       ## Alternative for macOS users: Mutagen https://wodby.com/docs/stacks/python/local#docker-for-mac

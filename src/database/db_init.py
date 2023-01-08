@@ -3,7 +3,7 @@ from os import getenv
 import mariadb
 
 con = mariadb.connect(
-    host='localhost',
+    host='db',
     user=getenv('DB_USER', default=''),
     password=getenv('DB_PASS', default=''),
     database=getenv('DB_NAME', default=''),
@@ -18,14 +18,18 @@ async def db_init():
         await create_table_users_data()
 
 
+async def db_close():
+    cur.close()
+    con.close()
+
+
 async def check_table_exists(name: str) -> bool:
     try:
         cur.execute(f"""
             SELECT EXISTS(
                 SELECT *
                 FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_name = '{name}')
+                WHERE table_name = '{name}')
         """)
         return cur.fetchone()[0]
     except Exception as e:
@@ -36,22 +40,15 @@ async def check_table_exists(name: str) -> bool:
 async def create_table_users():
     try:
         cur.execute("""
-            CREATE TABLE public.users (
-                uid      bigserial NOT NULL,
-                name     char(255),
-                username char(255),
-                type     char(65) NOT NULL,
-                status   boolean NOT NULL DEFAULT TRUE,
-                login    timestamp without time zone DEFAULT timezone('Europe/Kiev'::text, now())
+            CREATE TABLE users (
+                uid      serial comment 'The Telegram user ID.',
+                name     char(255) comment 'The name of this user.',
+                username char(255) comment 'The Telegram pseudonym of this user.',
+                status   boolean NOT NULL DEFAULT TRUE comment 'Whether the user is active or blocked.',
+                login    timestamp DEFAULT CURRENT_TIMESTAMP comment 'The time that the user last logged in.'
             );
-            comment on column users.uid      is 'The Telegram user ID.';
-            comment on column users.name     is 'The name of this user.';
-            comment on column users.username is 'The Telegram pseudonym of this user.';
-            comment on column users.type     is 'Type of user in the system.';
-            comment on column users.status   is 'Whether the user is active or blocked.';
-            comment on column users.login    is 'The time that the user last logged in.';
         """)
-        base.commit()
+        con.commit()
     except Exception as e:
         print(f'DB Error: {e}')
 
@@ -59,15 +56,13 @@ async def create_table_users():
 async def create_table_users_data():
     try:
         cur.execute("""
-            CREATE TABLE public.users_data (
-                uid    bigserial NOT NULL,
-                d_id   integer   NOT NULL,
-                d_date date      NOT NULL
+            CREATE TABLE users_data (
+                uid    serial comment 'The Telegram user ID.',
+                d_id   integer   NOT NULL comment 'The Data ID.',
+                d_type char(65)  NOT NULL comment 'Type of user in the system.',
+                d_date date      NOT NULL comment 'The Last date of requested data.'
             );
-            comment on column users_data.uid    is 'The Telegram user ID.';
-            comment on column users_data.d_id   is 'The Data ID.';
-            comment on column users_data.d_date is 'The Last date of requested data.';
         """)
-        base.commit()
+        con.commit()
     except Exception as e:
         print(f'DB Error: {e}')

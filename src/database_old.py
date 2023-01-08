@@ -7,14 +7,6 @@ async def user_data(message: types.Message, option, data):
     uid = message.from_user.id
     name = message.from_user.full_name
     match option:
-        case "save":
-            cur.execute("SELECT * FROM users WHERE uid = %s", [uid])
-            res = cur.fetchone()
-            if not res:
-                cur.execute("INSERT INTO users (uid, name, status) VALUES (%s, %s, true)", [uid, name])
-            else:
-                cur.execute("UPDATE users SET name = %s, status = true, last_active = default WHERE uid = %s",
-                            [name, uid])
         case "data":
             data = [name] + data + [uid]
             cur.execute("""UPDATE users SET

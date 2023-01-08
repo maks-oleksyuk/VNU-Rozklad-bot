@@ -1,18 +1,21 @@
 from aiogram import Dispatcher, types
+from database.db import insert_update_user
 from services.message import answer
 
 
 async def cmd_start(message: types.Message):
-    await answer(message, 'start')
-    # await user_data(message, "save", None)
+    await answer(message, 'start', 'choice')
+    await insert_update_user(message)
 
 
 async def cmd_help(message: types.Message):
     await answer(message, 'help')
+    await insert_update_user(message)
 
 
 async def cmd_about(message: types.Message):
-    await answer(message, 'about')
+    await answer(message, 'about', disable_web_page_preview=True)
+    await insert_update_user(message)
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):

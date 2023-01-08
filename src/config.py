@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from os import getenv
 
@@ -6,40 +7,24 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
 
-import json
-from database.db_init import db_init, cur, base
-from request import get_chair, get_faculties
+from database.db_init import db_init, db_close
+from services.storage import departments_init
 
 storage = MemoryStorage()
 
-bot = Bot(token=getenv("TOKEN", default=""))
+bot = Bot(token=getenv('TOKEN', default=''))
 dp = Dispatcher(bot, storage=storage)
-
-chair = []
-faculty = []
-
-week = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"] * 2
 
 
 async def on_startup(dp):
-    print("Bot Started")
     await db_init()
-    await get_chair()
-    await get_faculties()
-    with open("json/chair.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            chair.append(d["name"])
-    with open("json/faculties.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            faculty.append(d["name"])
+    await departments_init()
+    print('Bot Started Successfully')
 
 
-async def on_shutduwn(dp):
-    print('close')
-    cur.close()
-    base.close()
+async def on_shutdown(dp):
+    await db_close()
+    print('Bot Stopped')
 
 
 async def get_groups_by_faculty(faculty):
@@ -139,7 +124,7 @@ async def get_column(weekday, week, next):
         "sun",
         "week",
     ]
-    if weekday != None:
+    if weekday is not None:
         col = colums[weekday]
     if week:
         col = colums[-1]
