@@ -27,17 +27,6 @@ async def on_shutdown(dp):
     print('Bot Stopped')
 
 
-async def get_groups_by_faculty(faculty):
-    groups = []
-    with open("json/faculties.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            if d["name"] == faculty:
-                for g in d["objects"]:
-                    groups.append(g["name"])
-                return groups
-
-
 async def get_teachers_by_chair(chair):
     teachers = []
     with open("json/chair.min.json") as f:
@@ -50,37 +39,37 @@ async def get_teachers_by_chair(chair):
                 return teachers
 
 
-async def search_group(query):
-    search_result = []
-    if len(query) < 11:
-        with open("json/faculties.min.json") as f:
-            text = json.loads(f.read())
-            for d in text["psrozklad_export"]["departments"]:
-                for g in d["objects"]:
-                    if g["name"].lower() == query.lower():
-                        return [g["name"]]
-                    if g["name"].lower().find(query.lower()) != -1:
-                        search_result.append(g["name"])
-            if len(search_result):
-                search_result.sort()
-                return search_result
-    return []
-
-
-async def search_teacher(query):
-    search_result = []
-    if len(query) < 40:
-        with open("json/chair.min.json") as f:
-            text = json.loads(f.read())
-            for d in text["psrozklad_export"]["departments"]:
-                for t in d["objects"]:
-                    i = t["P"] + " " + t["I"] + " " + t["B"]
-                    if i.lower().find(query.lower()) != -1:
-                        search_result.append(i)
-            if len(search_result):
-                search_result.sort()
-                return search_result
-    return []
+# async def search_group(query):
+#     search_result = []
+#     if len(query) < 11:
+#         with open("json/faculties.min.json") as f:
+#             text = json.loads(f.read())
+#             for d in text["psrozklad_export"]["departments"]:
+#                 for g in d["objects"]:
+#                     if g["name"].lower() == query.lower():
+#                         return [g["name"]]
+#                     if g["name"].lower().find(query.lower()) != -1:
+#                         search_result.append(g["name"])
+#             if len(search_result):
+#                 search_result.sort()
+#                 return search_result
+#     return []
+#
+#
+# async def search_teacher(query):
+#     search_result = []
+#     if len(query) < 40:
+#         with open("json/chair.min.json") as f:
+#             text = json.loads(f.read())
+#             for d in text["psrozklad_export"]["departments"]:
+#                 for t in d["objects"]:
+#                     i = t["P"] + " " + t["I"] + " " + t["B"]
+#                     if i.lower().find(query.lower()) != -1:
+#                         search_result.append(i)
+#             if len(search_result):
+#                 search_result.sort()
+#                 return search_result
+#     return []
 
 
 async def get_group_id(query):

@@ -13,12 +13,6 @@ async def answer(message: types.Message, option, data=None):
         data (str, optional): Data to send. Defaults to None.
     """
     match option:
-        case "choice":
-            await message.answer(
-                "🦾 Обери для кого будемо формувати\n"
-                + "розклад використовуючи меню знизу:",
-                reply_markup=await setKeyboard("choice"),
-            )
         case "chair":
             await message.answer(
                 "📁 Обери *кафедру* зі списку або\n"
@@ -38,12 +32,6 @@ async def answer(message: types.Message, option, data=None):
                 "📂 Обери *викладача* зі списку:\n",
                 parse_mode="Markdown",
                 reply_markup=await setKeyboard("surname", message),
-            )
-        case "group":
-            await message.answer(
-                "📂 Обери *групу* зі списку:\n",
-                parse_mode="Markdown",
-                reply_markup=await setKeyboard("group", message),
             )
         case "data":
             await message.answer(
@@ -70,36 +58,35 @@ async def answer(message: types.Message, option, data=None):
         case "cancel-date":
             await message.answer("❕ Введеня дати скасовано")
 
-
-async def reply(message: types.Message, option):
-    """Sending a message using the reply aiogram method
-
-    Args:
-        message (types.Message): Message with additional data
-        option (str): Message identifier to send
-    """
-    match option:
-        case "good-search-group":
-            await message.reply(
-                "🗂 Ось що я знайшов:",
-                reply_markup=await setKeyboard("search-group", message),
-            )
-        case "fail-search-group":
-            await message.reply(
-                "За цим запитом нічого не знайдено🧐\n\n"
-                + "⁉️ Вкажіть більш точні дані або\n"
-                + "📁 використовуйте меню знизу:",
-                reply_markup=await setKeyboard("faculty", message),
-            )
-        case "good-search-teacher":
-            await message.reply(
-                "🗂 Ось що я знайшов:",
-                reply_markup=await setKeyboard("search-teacher", message),
-            )
-        case "fail-search-teacher":
-            await message.reply(
-                "За цим запитом нічого не знайдено🧐\n\n"
-                + "⁉️ Вкажіть більш точні дані або\n"
-                + "📁 використовуйте меню знизу:",
-                reply_markup=await setKeyboard("chair", message),
-            )
+# async def reply(message: types.Message, option):
+#     """Sending a message using the reply aiogram method
+#
+#     Args:
+#         message (types.Message): Message with additional data
+#         option (str): Message identifier to send
+#     """
+#     match option:
+#         case "good-search-group":
+#             await message.reply(
+#                 "🗂 Ось що я знайшов:",
+#                 reply_markup=await setKeyboard("search-group", message),
+#             )
+#         case "fail-search-group":
+#             await message.reply(
+#                 "За цим запитом нічого не знайдено🧐\n\n"
+#                 + "⁉️ Вкажіть більш точні дані або\n"
+#                 + "📁 використовуйте меню знизу:",
+#                 reply_markup=await setKeyboard("faculty", message),
+#             )
+#         case "good-search-teacher":
+#             await message.reply(
+#                 "🗂 Ось що я знайшов:",
+#                 reply_markup=await setKeyboard("search-teacher", message),
+#             )
+#         case "fail-search-teacher":
+#             await message.reply(
+#                 "За цим запитом нічого не знайдено🧐\n\n"
+#                 + "⁉️ Вкажіть більш точні дані або\n"
+#                 + "📁 використовуйте меню знизу:",
+#                 reply_markup=await setKeyboard("chair", message),
+#             )

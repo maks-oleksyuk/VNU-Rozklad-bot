@@ -8,8 +8,8 @@ api_url = 'http://194.44.187.20/cgi-bin/timetable_export.cgi'
 
 
 async def get_chair():
-    """Obtaining and preserving department data"""
-    path = Path("./../json/chair.min.json")
+    """ Obtaining and preserving department data """
+    path = Path('./../json/chair.min.json')
     if not path.exists() or datetime.now().day == 1:
         payload = {
             'req_type': 'obj_list',
@@ -37,7 +37,7 @@ async def get_chair():
 
 
 async def get_faculties():
-    """Obtaining and saving data about faculties"""
+    """ Obtaining and saving data about faculties """
     path = Path('./..json/faculties.min.json')
     if not path.exists() or datetime.now().day == 1:
         payload = {
@@ -51,5 +51,5 @@ async def get_faculties():
         r = requests.get(api_url, params=payload)
         text = json.loads(r.text)
         if text['psrozklad_export']['code'] == '0':
-            with open('./../json/faculties.min.json', 'w+') as f:
+            with open('./../json/faculty.min.json', 'w+') as f:
                 json.dump(text, f, ensure_ascii=False)
