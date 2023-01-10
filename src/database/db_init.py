@@ -58,9 +58,10 @@ async def create_table_users_data():
         cur.execute("""
             CREATE TABLE users_data (
                 uid    serial comment 'The Telegram user ID.',
-                d_id   integer   NOT NULL comment 'The Data ID.',
-                d_type char(65)  NOT NULL comment 'Type of user in the system.',
-                d_date date      NOT NULL comment 'The Last date of requested data.'
+                d_id   integer  NOT NULL comment 'The Data ID.',
+                d_type char(65) NOT NULL comment 'Type of user in the system.',
+                d_name char(65) NOT NULL comment 'The name of the received data.',
+                d_date date     NOT NULL comment 'The Last date of requested data.'
             );
         """)
         con.commit()

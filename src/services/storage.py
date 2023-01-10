@@ -74,6 +74,15 @@ async def get_groups_by_faculty(faculty: str):
 
 
 async def search(query: str, d_type: str):
+    """ Data search by json files
+
+    Args:
+        query (str): Text to search
+        d_type (str): Search results of a specific type (chair or faculty)
+
+    Returns:
+        Array with search results
+    """
     search_result = []
     with open(f'./../json/{d_type}.min.json') as f:
         text = json.loads(f.read())
@@ -91,3 +100,13 @@ async def search(query: str, d_type: str):
         if len(search_result):
             search_result.sort()
     return search_result
+
+
+async def get_data_id_and_name(query: str, d_type: str):
+    with open(f'./../json/{d_type}.min.json') as f:
+        text = json.loads(f.read())
+        for d in text['psrozklad_export']['departments']:
+            for i in d['objects']:
+                fullname = '{} {} {}'.format(i['P'], i['I'], i['B']) if d_type == 'chair' else ''
+                if i['name'].lower() == query.lower() or fullname.lower() == query.lower():
+                    return {'id': int(i['ID']), 'name': i['name']}

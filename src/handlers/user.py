@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 # from bot.config import (chair, get_group_id, get_teacher_id, is_date,
 #                         search_group, search_teacher)
-# from bot.database import user_data
+from database.db import save_user_data
 # from bot.handlers import sched_cmd
 from services.message import answer, reply
 from services.storage import faculty, search
@@ -82,7 +82,7 @@ async def set_group_search(message: types.Message, state: FSMContext):
         if len(groups) == 1:
             await state.finish()
             # arr_data = await get_group_id(groups[0]) + ['group', date.today()]
-            # await user_data(message, 'save', None)
+            await save_user_data(message, 'group')
             # await user_data(message, 'data', arr_data)
             # await sched_cmd.today(message)
         elif len(groups) > 1:
