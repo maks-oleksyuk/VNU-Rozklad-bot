@@ -13,7 +13,11 @@ async def insert_update_user(message: types.Message):
     try:
         cur.execute(f"""
             INSERT INTO users VALUES ({uid}, '{name}', '@{username}', default, default)
-                ON DUPLICATE KEY UPDATE name = '{name}', username = '@{username}', status = default, login = default;  
+                ON DUPLICATE KEY UPDATE
+                    name = '{name}',
+                    username = '@{username}',
+                    status = default,
+                    login = default;  
         """)
         con.commit()
     except Exception as e:
@@ -21,6 +25,7 @@ async def insert_update_user(message: types.Message):
 
 
 async def save_user_data(message: types.Message, d_type: str, d_date=date.today()):
+    await insert_update_user(message)
     uid = message.from_user.id
     s_type = 'faculty' if d_type == 'group' else 'chair'
     res = await get_data_id_and_name(message.text, s_type)

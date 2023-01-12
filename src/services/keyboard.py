@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
 
-from .storage import faculty, get_groups_by_faculty, search
+from .storage import chair, faculty, get_teachers_by_chair, get_groups_by_faculty, search
 
 
 async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboardMarkup:
@@ -16,30 +16,21 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
         ReplyKeyboardMarkup: Keyboard of the right option
     """
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    back = Kb(text='⬅️ Назад')
 
     match key:
         case 'choice':
             markup.row(Kb(text='Викладач 💼'), Kb(text='Студент 🎓'))
         case 'faculty':
-            markup.add(back)
-            for d in faculty:
-                markup.add(Kb(text=d))
-        # case "chair":
-        #     markup.add(b_back)
-        #     for b in chair:
-        #         markup.add(kb(text=b))
+            markup = await one_column_reply_keyboard(markup, faculty, True)
+        case 'chair':
+            markup = await one_column_reply_keyboard(markup, chair, True)
         case 'group':
-            markup.add(back)
             groups = await get_groups_by_faculty(message.text)
-            markup = await two_column_reply_keyboard(markup, groups)
-        # case "surname":
-        #     markup.add(b_back)
-        #     teachers = await get_teachers_by_chair(message.text)
-        #     for i in teachers:
-        #         markup.add(kb(text=i))
+            markup = await two_column_reply_keyboard(markup, groups, True)
+        case 'surname':
+            teachers = await get_teachers_by_chair(message.text)
+            markup = await one_column_reply_keyboard(markup, teachers, True)
         case 'search-group':
-            markup.add(back)
             res = await search(message.text, 'faculty')
             markup = await two_column_reply_keyboard(markup, res)
         # case "search-teacher":
@@ -57,7 +48,17 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
     return markup
 
 
-async def two_column_reply_keyboard(markup: ReplyKeyboardMarkup, data) -> ReplyKeyboardMarkup:
+async def one_column_reply_keyboard(markup: ReplyKeyboardMarkup, data, use_back: bool = False) -> ReplyKeyboardMarkup:
+    if use_back:
+        markup.add(Kb(text='⬅️ Назад'))
+    for i in data:
+        markup.add(Kb(text=i))
+    return markup
+
+
+async def two_column_reply_keyboard(markup: ReplyKeyboardMarkup, data, use_back: bool = False) -> ReplyKeyboardMarkup:
+    if use_back:
+        markup.add(Kb(text='⬅️ Назад'))
     for i in range(0, len(data), 2):
         if i == len(data) - 1:
             markup.add(Kb(text=data[i]))

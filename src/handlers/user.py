@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from database.db import save_user_data
 # from bot.handlers import sched_cmd
 from services.message import answer, reply
-from services.storage import faculty, search
+from services.storage import chair, faculty, search
 
 from .commands import cmd_cancel
 
@@ -24,8 +24,8 @@ async def text(message: types.Message):
             await FSMStudent.faculty.set()
             await answer(message, 'faculty', 'faculty')
         case 'Викладач 💼':
-            await FSMTeaсher.chair.set()
-            await answer(message, "chair")
+            await FSMTeacher.chair.set()
+            await answer(message, 'chair', 'chair')
         case 'сьогодні':
             await sched_cmd.today(message)
         case 'На тиждень':
@@ -81,9 +81,7 @@ async def set_group_search(message: types.Message, state: FSMContext):
         groups = await search(message.text, 'faculty')
         if len(groups) == 1:
             await state.finish()
-            # arr_data = await get_group_id(groups[0]) + ['group', date.today()]
             await save_user_data(message, 'group')
-            # await user_data(message, 'data', arr_data)
             # await sched_cmd.today(message)
         elif len(groups) > 1:
             await reply(message, 'good-search', 'search-group')
@@ -102,26 +100,26 @@ class FSMTeacher(StatesGroup):
     search = State()
 
 
-async def setTeacherChair(message: types.Message, state: FSMContext):
-    if message.text == "⬅️ Назад":
+async def set_teacher_chair(message: types.Message, state: FSMContext):
+    if message.text == '⬅️ Назад':
         await state.finish()
         await cancel(message, state)
     elif message.text in chair:
         await FSMTeacher.next()
-        await answer(message, "surname")
+        await answer(message, 'surname', 'surname')
     else:
-        await setTeacherSearch(message, state)
+        await set_teacher_search(message, state)
 
 
-async def setTeacherSurname(message: types.Message, state: FSMContext):
+async def set_teacher_surname(message: types.Message, state: FSMContext):
     if message.text == "⬅️ Назад":
         await FSMTeacher.chair.set()
         await answer(message, "chair")
     else:
-        await setTeacherSearch(message, state)
+        await set_teacher_search(message, state)
 
 
-async def setTeacherSearch(message: types.Message, state: FSMContext):
+async def set_teacher_search(message: types.Message, state: FSMContext):
     await FSMTeacher.search.set()
     if message.text == "⬅️ Назад":
         await FSMTeacher.chair.set()
@@ -185,9 +183,9 @@ def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(setdate, chat_type=types.ChatType.PRIVATE, commands="setdate")
     dp.register_message_handler(text, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(set_student_faculty, state=FSMStudent.faculty, chat_type=types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeacherChair, state=FSMTeacher.chair, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(set_teacher_chair, state=FSMTeacher.chair, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(set_student_group, state=FSMStudent.group, chat_type=types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeacherSurname, state=FSMTeacher.surname, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(set_teacher_surname, state=FSMTeacher.surname, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(set_group_search, state=FSMStudent.search, chat_type=types.ChatType.PRIVATE)
-    dp.register_message_handler(setTeacherSearch, state=FSMTeacher.search, chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(set_teacher_search, state=FSMTeacher.search, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(set_date, state=FSMSetDate.set_date, chat_type=types.ChatType.PRIVATE)

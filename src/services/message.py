@@ -5,6 +5,13 @@ from .storage import get_message_by_key
 
 
 async def answer(message: types.Message, text_key: str, markup_key=None, **kwargs):
+    """Sending a message using the answer aiogram method
+
+    Args:
+        message (types.Message): Message with additional data
+        text_key (str): Text message search key
+        markup_key (str): The key to create the corresponding keyboard
+    """
     await message.answer(
         parse_mode='MarkdownV2',
         text=await get_message_by_key(text_key),

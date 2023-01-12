@@ -36,9 +36,14 @@ message = {
 
     'group': '📂 Оберіть *групу* зі списку:\n',
 
+    'chair': '📁 Обери *кафедру* зі списку або\n'
+             + 'введіть прізвище для пошуку 🔎',
+
+    'surname': '📂 Обери *викладача* зі списку:\n',
+
     'good-search': '🗂 Ось що я відшукав:',
 
-    'fail-search': 'За цим запитом нічого не знайдено🧐\n\n'
+    'fail-search': 'За цим запитом нічого не знайдено 🧐\n\n'
                    + '⁉️ Вкажіть більш точні дані або\n'
                    + '📁 використовуйте меню знизу:',
 }
@@ -71,6 +76,18 @@ async def get_groups_by_faculty(faculty: str):
                 for g in d['objects']:
                     groups.append(g['name'])
     return groups
+
+
+async def get_teachers_by_chair(chair: str):
+    teachers = []
+    with open('./../json/chair.min.json') as f:
+        text = json.loads(f.read())
+        for d in text['psrozklad_export']['departments']:
+            if d['name'] == chair:
+                for t in d['objects']:
+                    fullname = '{} {} {}'.format(t['P'], t['I'], t['B'])
+                    teachers.append(fullname)
+    return teachers
 
 
 async def search(query: str, d_type: str):
