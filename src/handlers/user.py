@@ -1,5 +1,3 @@
-from datetime import date
-
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -112,31 +110,29 @@ async def set_teacher_chair(message: types.Message, state: FSMContext):
 
 
 async def set_teacher_surname(message: types.Message, state: FSMContext):
-    if message.text == "⬅️ Назад":
+    if message.text == '⬅️ Назад':
         await FSMTeacher.chair.set()
-        await answer(message, "chair")
+        await answer(message, 'chair', 'chair')
     else:
         await set_teacher_search(message, state)
 
 
 async def set_teacher_search(message: types.Message, state: FSMContext):
     await FSMTeacher.search.set()
-    if message.text == "⬅️ Назад":
+    if message.text == '⬅️ Назад':
         await FSMTeacher.chair.set()
-        await answer(message, "chair")
+        await answer(message, 'chair', 'chair')
     else:
-        tr = await search_teacher(message.text)
-        if len(tr) == 1:
+        teacher = await search(message.text, 'chair')
+        if len(teacher) == 1:
             await state.finish()
-            arr_data = await get_teacher_id(tr[0]) + ["teacher", date.today()]
-            await user_data(message, "save", None)
-            await user_data(message, "data", arr_data)
-            await sched_cmd.today(message)
-        elif len(tr) > 1:
-            await reply(message, "good-search-teacher")
+            await save_user_data(message, 'teacher')
+            # await sched_cmd.today(message)
+        elif len(teacher) > 1:
+            await reply(message, 'good-search', 'search-teacher')
         else:
             await FSMTeacher.chair.set()
-            await reply(message, "fail-search-teacher")
+            await reply(message, 'fail-search', 'chair')
 
 
 # -----------------------------------------------------------

@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
 
-from .storage import chair, faculty, get_teachers_by_chair, get_groups_by_faculty, search
+from .storage import chair, faculty, search, get_teachers_by_chair, get_groups_by_faculty
 
 
 async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboardMarkup:
@@ -32,12 +32,10 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             markup = await one_column_reply_keyboard(markup, teachers, True)
         case 'search-group':
             res = await search(message.text, 'faculty')
-            markup = await two_column_reply_keyboard(markup, res)
-        # case "search-teacher":
-        #     markup.add(b_back)
-        #     res = await search_teacher(message.text)
-        #     for i in res:
-        #         markup.add(kb(text=i))
+            markup = await two_column_reply_keyboard(markup, res, True)
+        case 'search-teacher':
+            res = await search(message.text, 'chair')
+            markup = await one_column_reply_keyboard(markup, res, True)
         # case "timetable":
         #     days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
         #     res = await user_data(message, "get_data_id", None)
@@ -65,3 +63,20 @@ async def two_column_reply_keyboard(markup: ReplyKeyboardMarkup, data, use_back:
         else:
             markup.row(Kb(text=data[i]), Kb(text=data[i + 1]))
     return markup
+
+# async def inline(option, message: types.Message = None):
+#     markup = InlineKeyboardMarkup()
+#     match option:
+#         case "who":
+#             all = ikb("Всім", callback_data='all')
+#             group = ikb("Групі", callback_data='group')
+#             user = ikb("За UID", callback_data='user')
+#             markup.row(all, group, user)
+#         case "back":
+#             back = ikb("⬅️ Назад", callback_data='back')
+#             markup.add(back)
+#         case "confirm":
+#             cancel = ikb("Скасувати ❌", callback_data='cancel')
+#             confirm = ikb("Підтвердити ✅", callback_data='confirm')
+#             markup.add(cancel, confirm)
+#     return markup
