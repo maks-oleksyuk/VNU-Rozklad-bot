@@ -1,6 +1,16 @@
 from os import getenv
 
 import mariadb
+from sqlalchemy import inspect, create_engine
+
+engine = create_engine(
+    'mariadb+mariadbconnector://{}:{}@db:3306/{}'.format(
+        getenv('DB_USER', default=''),
+        getenv('DB_PASS', default=''),
+        getenv('DB_NAME', default='')
+    )
+)
+inspector = inspect(engine)
 
 con = mariadb.connect(
     host='db',
@@ -12,29 +22,17 @@ cur = con.cursor()
 
 
 async def db_init():
-    if not await check_table_exists('users'):
+    if not inspector.has_table('users'):
         await create_table_users()
-    if not await check_table_exists('users_data'):
+    if not inspector.has_table('users_data'):
         await create_table_users_data()
+    if not inspector.has_table('timetable'):
+        await create_table_timetable()
 
 
 async def db_close():
     cur.close()
     con.close()
-
-
-async def check_table_exists(name: str) -> bool:
-    try:
-        cur.execute(f"""
-            SELECT EXISTS(
-                SELECT *
-                FROM information_schema.tables
-                WHERE table_name = '{name}')
-        """)
-        return cur.fetchone()[0]
-    except Exception as e:
-        print(f'DB Error: {e}')
-        return False
 
 
 async def create_table_users():
@@ -62,6 +60,19 @@ async def create_table_users_data():
                 d_type char(65) NOT NULL comment 'Type of user in the system.',
                 d_name char(65) NOT NULL comment 'The name of the received data.',
                 d_date date     NOT NULL comment 'The Last date of requested data.'
+            );
+        """)
+        con.commit()
+    except Exception as e:
+        print(f'DB Error: {e}')
+
+
+async def create_table_timetable():
+    try:
+        cur.execute("""
+            create table timetable (
+                id   smallint unsigned not null comment 'The timetable data ID.',
+                mode varchar(255)         not null comment 'The data mode.'
             );
         """)
         con.commit()

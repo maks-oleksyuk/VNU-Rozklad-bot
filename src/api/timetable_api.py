@@ -48,8 +48,8 @@ async def get_faculties():
             'coding_mode': 'UTF8',
             'bs': 'ok',
         }
-        r = requests.get(api_url, params=payload)
-        text = json.loads(r.text)
+        res = requests.get(api_url, params=payload)
+        text = json.loads(res.text)
         if text['psrozklad_export']['code'] == '0':
             with open('./../json/faculty.min.json', 'w+') as f:
                 json.dump(text, f, ensure_ascii=False)

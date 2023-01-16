@@ -8,7 +8,7 @@ from handlers import commands, user
 commands.register_handlers_commands(dp)
 user.register_handlers_user(dp)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     executor.start_polling(
         dispatcher=dp,
         skip_updates=True,
