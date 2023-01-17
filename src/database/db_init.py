@@ -25,9 +25,9 @@ cur = con.cursor()
 
 
 async def db_init():
-    if not inspector.has_table('users_t5'):
+    if not inspector.has_table('users'):
         Table(
-            'users_t5', meta,
+            'users', meta,
             Column('uid', BIGINT(unsigned=True), unique=True, primary_key=True,
                    comment='The Telegram user ID.'),
             Column('name', VARCHAR(255),
