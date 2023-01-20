@@ -2,29 +2,32 @@ from datetime import date
 
 from aiogram import types
 from services.storage import get_data_id_and_name
+from sqlalchemy import text
+from sqlalchemy.dialects.mysql import insert
 
-from .db_init import con, cur
+from .db_init import con, cur, engine, meta
 
 
 async def insert_update_user(message: types.Message):
     uid = message.from_user.id
     name = message.from_user.full_name
     username = message.from_user.username
-    try:
-        cur.execute(f"""
-            INSERT INTO users VALUES ({uid}, '{name}', '@{username}', default, default)
-                ON DUPLICATE KEY UPDATE
-                    name = '{name}',
-                    username = '@{username}',
-                    status = default,
-                    login = default;  
-        """)
-        con.commit()
-    except Exception as e:
-        print(f'DB Error: {e}')
+    conn = engine.connect()
+    stmt = insert(meta.tables['users']).values(
+        uid=uid,
+        name=name,
+        username=username,
+    ).on_duplicate_key_update(
+        name=name,
+        username=username,
+        status=True,
+        login=text('default')
+    )
+    conn.execute(stmt)
 
 
-async def save_user_data(message: types.Message, d_type: str, d_date=date.today()):
+async def save_user_data(message: types.Message, d_type: str,
+                         d_date=date.today()):
     await insert_update_user(message)
     uid = message.from_user.id
     s_type = 'faculty' if d_type == 'group' else 'chair'
