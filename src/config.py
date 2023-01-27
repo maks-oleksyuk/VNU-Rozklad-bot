@@ -7,6 +7,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
 
+from api.timetable_api import get_groups, get_teachers
 from database.db_init import db_init, db_close
 from services.storage import departments_init
 
@@ -16,13 +17,17 @@ bot = Bot(token=getenv('TOKEN', default=''))
 dp = Dispatcher(bot, storage=storage)
 
 
-async def on_startup(dp):
+async def on_startup(dp: Dispatcher):
     await db_init()
+    if date.today().day == 27:
+        await get_groups()
+        await get_teachers()
+    # @todo Remove next line when refactor departments to table.
     await departments_init()
     print('Bot Started Successfully')
 
 
-async def on_shutdown(dp):
+async def on_shutdown(dp: Dispatcher):
     await db_close()
     print('Bot Stopped')
 
@@ -80,13 +85,16 @@ async def get_column(weekday, week, next):
 async def is_date(string, fuzzy=False):
     try:
         parse(string, fuzzy=fuzzy)
-        if len(string) == 5 and int(string[3:]) <= 12 and int(string[:2]) <= 31:
+        if len(string) == 5 and int(string[3:]) <= 12 and int(
+                string[:2]) <= 31:
             d = date(date.today().year, int(string[3:]), int(string[:2]))
             return d
-        elif len(string) == 5 and int(string[3:]) <= 31 and int(string[:2]) <= 12:
+        elif len(string) == 5 and int(string[3:]) <= 31 and int(
+                string[:2]) <= 12:
             d = date(date.today().year, int(string[:2]), int(string[3:]))
             return d
-        elif len(string) == 5 and int(string[3:]) > 12 and int(string[:2]) > 12:
+        elif len(string) == 5 and int(string[3:]) > 12 and int(
+                string[:2]) > 12:
             return False
         else:
             return parse(string).date()

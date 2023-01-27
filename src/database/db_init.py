@@ -1,6 +1,5 @@
 from os import getenv
 
-import mariadb
 from sqlalchemy import create_engine, inspect, MetaData, Table, Column
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, DATE, TIMESTAMP
@@ -16,14 +15,7 @@ engine = create_engine(
 meta = MetaData()
 meta.reflect(bind=engine)
 inspector = inspect(engine)
-
-con = mariadb.connect(
-    host='db',
-    user=getenv('DB_USER', default=''),
-    password=getenv('DB_PASS', default=''),
-    database=getenv('DB_NAME', default=''),
-)
-cur = con.cursor()
+conn = engine.connect()
 
 
 async def db_init():
@@ -47,12 +39,40 @@ async def db_init():
             Column('uid', BIGINT(unsigned=True), unique=True, primary_key=True,
                    comment='The Telegram user ID.'),
             Column('d_id', INTEGER, nullable=False, comment='The Data ID.'),
-            Column('d_type', VARCHAR(65), nullable=False,
+            Column('d_mode', VARCHAR(65), nullable=False,
                    comment='Type of user in the system.'),
             Column('d_name', VARCHAR(65), nullable=False,
                    comment='The name of the received data.'),
             Column('d_date', DATE, nullable=False,
                    comment='The Last date of requested data.')
+        )
+    if not inspector.has_table('groups'):
+        Table(
+            'groups', meta,
+            Column('id', SMALLINT(unsigned=True), nullable=False,
+                   comment='The group ID.'),
+            Column('department', VARCHAR(128), nullable=False,
+                   comment='The group department.'),
+            Column('name', VARCHAR(32), nullable=False,
+                   comment='The group name.'),
+        )
+    if not inspector.has_table('teachers'):
+        Table(
+            'teachers', meta,
+            Column('id', SMALLINT(unsigned=True), nullable=False,
+                   comment='The teacher ID.'),
+            Column('department', VARCHAR(128), nullable=False,
+                   comment='The teacher department.'),
+            Column('name', VARCHAR(32), nullable=False,
+                   comment='The teacher shortname form .'),
+            Column('fullname', VARCHAR(255), nullable=False,
+                   comment='The teacher fullname form.'),
+            Column('P', VARCHAR(32), nullable=False,
+                   comment='The teacher surname.'),
+            Column('I', VARCHAR(32), nullable=False,
+                   comment='The teacher name.'),
+            Column('P', VARCHAR(32), nullable=False,
+                   comment='The teacher middle name.'),
         )
     if not inspector.has_table('timetable'):
         Table(
@@ -66,7 +86,5 @@ async def db_init():
 
 
 async def db_close():
+    conn.close()
     engine.dispose()
-    # @todo Remove close mariadb connect when finish refactor code to orm
-    cur.close()
-    con.close()

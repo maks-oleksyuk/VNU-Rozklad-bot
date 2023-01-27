@@ -1,10 +1,12 @@
 import json
+from datetime import datetime
 from os import getenv
 
-from api.timetable_api import get_chair, get_faculties
+# from api.timetable_api import get_groups, get_teachers
 
 chair, faculty = [], []
-week = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'] * 2
+week = ['Понеділок', 'Вівторок', 'Середа', 'Четвер',
+        "П'ятниця", 'Субота', 'Неділя'] * 2
 
 message = {
     'start': '👋 *Привіт\\!*\n\n'
@@ -24,7 +26,8 @@ message = {
     'about': '🤖 Бот, для швидкого перегляду розкладу VNU\n\n'
              + '👨🏼‍💻 Бот знаходиться в розробці, тому,\n'
              + 'якщо виникнуть якісь проблеми або питання\n'
-             + 'не соромся, пиши [сюди](tg://user?id=' + str(getenv('ADMIN_ID')) + '), він допоможе 😎\n\n'
+             + 'не соромся, пиши [сюди](tg://user?id=' + str(
+        getenv('ADMIN_ID')) + '), він допоможе 😎\n\n'
              + '*🎨 Велике дякую* [Tim Boniuk](https://t.me/timboniuk) за чудовий аватар\n\n'
              + '[🇺🇦 Підтримати ЗСУ](https://savelife.in.ua/donate/)',
 
@@ -54,13 +57,13 @@ async def get_message_by_key(key: str) -> str:
 
 
 async def departments_init():
-    await get_chair()
+    # await get_chair()
     with open('./../json/chair.min.json') as f:
         text = json.loads(f.read())
     for d in text['psrozklad_export']['departments']:
         chair.append(d['name'])
 
-    await get_faculties()
+    # await get_faculties()
     with open('./../json/faculty.min.json') as f:
         text = json.loads(f.read())
         for d in text['psrozklad_export']['departments']:
@@ -124,6 +127,8 @@ async def get_data_id_and_name(query: str, d_type: str):
         text = json.loads(f.read())
         for d in text['psrozklad_export']['departments']:
             for i in d['objects']:
-                fullname = '{} {} {}'.format(i['P'], i['I'], i['B']) if d_type == 'chair' else ''
-                if i['name'].lower() == query.lower() or fullname.lower() == query.lower():
+                fullname = '{} {} {}'.format(i['P'], i['I'], i[
+                    'B']) if d_type == 'chair' else ''
+                if i[
+                    'name'].lower() == query.lower() or fullname.lower() == query.lower():
                     return {'id': int(i['ID']), 'name': i['name']}
