@@ -1,8 +1,7 @@
 from datetime import date
 
 from aiogram import types
-from services.storage import get_data_id_and_name
-from sqlalchemy import text, delete
+from sqlalchemy import text, select
 from sqlalchemy.dialects.mysql import insert
 
 from .db_init import conn, meta
@@ -48,11 +47,42 @@ async def save_user_data(message: types.Message,
 
 async def save_groups(data: dict):
     conn.execute(meta.tables['groups'].delete())
-    for d in data:
-        for i in d['objects']:
-            stmt = insert(meta.tables['groups']).values(
-                id=i['ID'],
-                department=d['name'],
-                name=i['name'],
-            )
-            conn.execute(stmt)
+    query_data = []
+    [(query_data.append({
+        'id': i['ID'],
+        'department': d['name'],
+        'name': i['name'],
+    })) for d in data for i in d['objects'] if i['ID'] != '']
+    stmt = insert(meta.tables['groups']).values(query_data)
+    conn.execute(stmt)
+
+
+async def save_teachers(data: dict):
+    conn.execute(meta.tables['teachers'].delete())
+    query_data = []
+    [(query_data.append({
+        'id': i['ID'],
+        'department': d['name'],
+        'name': i['name'],
+        'fullname': '{} {} {}'.format(i['P'], i['I'], i['B']),
+        'P': i['P'],
+        'I': i['I'],
+        'B': i['B'],
+    })) for d in data for i in d['objects'] if i['ID'] != '']
+    stmt = insert(meta.tables['teachers']).values(query_data)
+    conn.execute(stmt)
+
+
+async def get_departments_by_mode(mode: str):
+    table = meta.tables[mode]
+    stmt = select(table.c.department).distinct()
+    res = conn.execute(stmt).all()
+    return [r for r, in res]
+
+
+async def get_objects_by_department(mode: str, department: str):
+    table = meta.tables[mode]
+    name = table.c.name if mode == 'groups' else table.c.fullname
+    stmt = select(name).where(table.c.department == department)
+    res = conn.execute(stmt).all()
+    return [r for r, in res]

@@ -71,7 +71,7 @@ async def db_init():
                    comment='The teacher surname.'),
             Column('I', VARCHAR(32), nullable=False,
                    comment='The teacher name.'),
-            Column('P', VARCHAR(32), nullable=False,
+            Column('B', VARCHAR(32), nullable=False,
                    comment='The teacher middle name.'),
         )
     if not inspector.has_table('timetable'):

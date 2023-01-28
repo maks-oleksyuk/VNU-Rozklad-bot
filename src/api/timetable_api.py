@@ -1,7 +1,7 @@
 import json
 
 import requests
-from database.db import save_groups
+from database.db import save_groups, save_teachers
 
 api_url = 'http://194.44.187.20/cgi-bin/timetable_export.cgi'
 
@@ -16,15 +16,16 @@ async def get_groups():
         'coding_mode': 'UTF8',
         'bs': 'ok',
     }
-    # try:
-    #     res = requests.get(api_url, params=payload)
-    #     text = json.loads(res.text)
-    # except Exception as e:
-    with open('./../json/faculty.min.json') as f:
-        text = json.loads(f.read())
-        if text['psrozklad_export']['code'] == '0':
+    try:
+        res = requests.get(api_url, params=payload)
+        text = json.loads(res.text)
+        code = text['psrozklad_export']['code']
+        if code == '0':
             await save_groups(text['psrozklad_export']['departments'])
-    # print(f'API Error: {e}')
+        else:
+            raise Exception(f'Request return bad response code - {code}')
+    except Exception as e:
+        print(f'API Error: {e}\nTable groups not updated!')
 
 
 async def get_teachers():
@@ -40,20 +41,10 @@ async def get_teachers():
     try:
         res = requests.get(api_url, params=payload)
         text = json.loads(res.text)
+        code = text['psrozklad_export']['code']
+        if code == '0':
+            await save_teachers(text['psrozklad_export']['departments'])
+        else:
+            raise Exception(f'Request return bad response code - {code}')
     except Exception as e:
-        print(f'API Error: {e}')
-    # index = []
-# for d in range(len(text['psrozklad_export']['departments'])):
-#     for g in range(len(
-#             text['psrozklad_export']['departments'][d]['objects'])):
-#         n = text['psrozklad_export']['departments'][d]['objects'][g]
-#         if n['name'].find('....') != -1 or n['name'].find(
-#                 'Вакансія') != -1:
-#             index.append([d, g])
-#         if n['B'].find('.') != -1:
-#             n['B'] = ''
-# for i in reversed(index):
-#     del text['psrozklad_export']['departments'][i[0]]['objects'][i[1]]
-# if text['psrozklad_export']['code'] == '0':
-#     with open('./../json/chair.min.json', 'w+') as f:
-#         json.dump(text, f, ensure_ascii=False)
+        print(f'API Error: {e}\nTable teachers not updated!')

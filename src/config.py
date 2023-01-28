@@ -7,7 +7,6 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from dateutil.parser import parse
 
-from api.timetable_api import get_groups, get_teachers
 from database.db_init import db_init, db_close
 from services.storage import departments_init
 
@@ -19,10 +18,6 @@ dp = Dispatcher(bot, storage=storage)
 
 async def on_startup(dp: Dispatcher):
     await db_init()
-    if date.today().day == 27:
-        await get_groups()
-        await get_teachers()
-    # @todo Remove next line when refactor departments to table.
     await departments_init()
     print('Bot Started Successfully')
 

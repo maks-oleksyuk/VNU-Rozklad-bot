@@ -1,8 +1,9 @@
 import json
-from datetime import datetime
+from datetime import date
 from os import getenv
 
-# from api.timetable_api import get_groups, get_teachers
+from api.timetable_api import get_groups, get_teachers
+from database.db import get_departments_by_mode
 
 chair, faculty = [], []
 week = ['Понеділок', 'Вівторок', 'Середа', 'Четвер',
@@ -57,40 +58,12 @@ async def get_message_by_key(key: str) -> str:
 
 
 async def departments_init():
-    # await get_chair()
-    with open('./../json/chair.min.json') as f:
-        text = json.loads(f.read())
-    for d in text['psrozklad_export']['departments']:
-        chair.append(d['name'])
-
-    # await get_faculties()
-    with open('./../json/faculty.min.json') as f:
-        text = json.loads(f.read())
-        for d in text['psrozklad_export']['departments']:
-            faculty.append(d['name'])
-
-
-async def get_groups_by_faculty(faculty: str):
-    groups = []
-    with open('./../json/faculty.min.json') as f:
-        text = json.loads(f.read())
-        for d in text['psrozklad_export']['departments']:
-            if d['name'] == faculty:
-                for g in d['objects']:
-                    groups.append(g['name'])
-    return groups
-
-
-async def get_teachers_by_chair(chair: str):
-    teachers = []
-    with open('./../json/chair.min.json') as f:
-        text = json.loads(f.read())
-        for d in text['psrozklad_export']['departments']:
-            if d['name'] == chair:
-                for t in d['objects']:
-                    fullname = '{} {} {}'.format(t['P'], t['I'], t['B'])
-                    teachers.append(fullname)
-    return teachers
+    # global faculty, chair
+    if date.today().day == 1:
+        await get_groups()
+        await get_teachers()
+    faculty[:] = await get_departments_by_mode('groups')
+    chair[:] = await get_departments_by_mode('teachers')
 
 
 async def search(query: str, d_type: str):
