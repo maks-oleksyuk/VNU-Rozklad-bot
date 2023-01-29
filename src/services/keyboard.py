@@ -1,9 +1,9 @@
 from aiogram import types
 from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
+from database.db import get_objects_by_department, search
 
-from .storage import chair, faculty, search
-from database.db import get_objects_by_department
+from .storage import chair, faculty
 
 
 async def get_reply_keyboard_by_key(message: types.Message,
@@ -33,11 +33,11 @@ async def get_reply_keyboard_by_key(message: types.Message,
             data = await get_objects_by_department('teachers', message.text)
             markup = await one_column_reply_keyboard(markup, data, True)
         case 'search-group':
-            res = await search(message.text, 'faculty')
-            markup = await two_column_reply_keyboard(markup, res, True)
+            data = await search('groups', message.text)
+            markup = await two_column_reply_keyboard(markup, data, True)
         case 'search-teacher':
-            res = await search(message.text, 'chair')
-            markup = await one_column_reply_keyboard(markup, res, True)
+            data = await search('teachers', message.text)
+            markup = await one_column_reply_keyboard(markup, data, True)
         # case "timetable":
         #     days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
         #     res = await user_data(message, "get_data_id", None)

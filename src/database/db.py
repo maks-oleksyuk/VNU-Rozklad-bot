@@ -22,14 +22,14 @@ async def insert_update_user(message: types.Message):
         login=text('default')
     )
     conn.execute(stmt)
+    conn.commit()
 
 
 async def save_user_data(message: types.Message,
                          d_mode: str, d_date=date.today()):
     await insert_update_user(message)
     uid = message.from_user.id
-    s_type = 'faculty' if d_mode == 'group' else 'chair'
-    res = await get_data_id_and_name(message.text, s_type)
+    res = await get_data_id_and_name(f'{d_mode}s', message.text)
     stmt = insert(meta.tables['users_data']).values(
         uid=uid,
         d_id=res.get('id'),
@@ -43,6 +43,7 @@ async def save_user_data(message: types.Message,
         d_date=d_date
     )
     conn.execute(stmt)
+    conn.commit()
 
 
 async def save_groups(data: dict):
@@ -55,6 +56,7 @@ async def save_groups(data: dict):
     })) for d in data for i in d['objects'] if i['ID'] != '']
     stmt = insert(meta.tables['groups']).values(query_data)
     conn.execute(stmt)
+    conn.commit()
 
 
 async def save_teachers(data: dict):
@@ -71,6 +73,7 @@ async def save_teachers(data: dict):
     })) for d in data for i in d['objects'] if i['ID'] != '']
     stmt = insert(meta.tables['teachers']).values(query_data)
     conn.execute(stmt)
+    conn.commit()
 
 
 async def get_departments_by_mode(mode: str):
@@ -86,3 +89,29 @@ async def get_objects_by_department(mode: str, department: str):
     stmt = select(name).where(table.c.department == department)
     res = conn.execute(stmt).all()
     return [r for r, in res]
+
+
+async def search(mode: str, query: str):
+    """ Search for matches in the database
+
+    Args:
+        mode (str): Search results of a specific type (groups or teacher)
+        query (str): Text to search
+
+    Returns:
+        Array with search results
+    """
+    table = meta.tables[mode]
+    name = table.c.name if mode == 'groups' else table.c.fullname
+    # TODO: Fix search it next variants (Біо-11 - Біо-11з)
+    stmt = select(name).filter(name.like(f'%{query}%'))
+    res = conn.execute(stmt).all()
+    return [r for r, in res]
+
+
+async def get_data_id_and_name(mode: str, query: str):
+    table = meta.tables[mode]
+    name = table.c.name if mode == 'groups' else table.c.fullname
+    stmt = select(table.c.id, table.c.name).where(name == query)
+    res = conn.execute(stmt).first()
+    return {'id': int(res[0]), 'name': res[1]}

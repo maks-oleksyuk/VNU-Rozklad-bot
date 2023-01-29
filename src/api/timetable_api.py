@@ -3,7 +3,7 @@ import json
 import requests
 from database.db import save_groups, save_teachers
 
-api_url = 'http://194.44.187.20/cgi-bin/timetable_export.cgi'
+api_url = 'http://94.130.69.82/cgi-bin/timetable_export.cgi'
 
 
 async def get_groups():
@@ -23,7 +23,9 @@ async def get_groups():
         if code == '0':
             await save_groups(text['psrozklad_export']['departments'])
         else:
-            raise Exception(f'Request return bad response code - {code}')
+            error = text['psrozklad_export']['error']['error_message']
+            raise Exception(
+                f'Request return bad response code - {code}\n{error}')
     except Exception as e:
         print(f'API Error: {e}\nTable groups not updated!')
 
@@ -45,6 +47,8 @@ async def get_teachers():
         if code == '0':
             await save_teachers(text['psrozklad_export']['departments'])
         else:
-            raise Exception(f'Request return bad response code - {code}')
+            error = text['psrozklad_export']['error']['error_message']
+            raise Exception(
+                f'Request return bad response code - {code}\n{error}')
     except Exception as e:
         print(f'API Error: {e}\nTable teachers not updated!')

@@ -58,50 +58,8 @@ async def get_message_by_key(key: str) -> str:
 
 
 async def departments_init():
-    # global faculty, chair
     if date.today().day == 1:
         await get_groups()
         await get_teachers()
     faculty[:] = await get_departments_by_mode('groups')
     chair[:] = await get_departments_by_mode('teachers')
-
-
-async def search(query: str, d_type: str):
-    """ Data search by json files
-
-    Args:
-        query (str): Text to search
-        d_type (str): Search results of a specific type (chair or faculty)
-
-    Returns:
-        Array with search results
-    """
-    search_result = []
-    with open(f'./../json/{d_type}.min.json') as f:
-        text = json.loads(f.read())
-        for d in text['psrozklad_export']['departments']:
-            for i in d['objects']:
-                if d_type == 'faculty':
-                    if i['name'].lower() == query.lower():
-                        return [i['name']]
-                    if i['name'].lower().find(query.lower()) != -1:
-                        search_result.append(i['name'])
-                if d_type == 'chair':
-                    fullname = '{} {} {}'.format(i['P'], i['I'], i['B'])
-                    if fullname.lower().find(query.lower()) != -1:
-                        search_result.append(fullname)
-        if len(search_result):
-            search_result.sort()
-    return search_result
-
-
-async def get_data_id_and_name(query: str, d_type: str):
-    with open(f'./../json/{d_type}.min.json') as f:
-        text = json.loads(f.read())
-        for d in text['psrozklad_export']['departments']:
-            for i in d['objects']:
-                fullname = '{} {} {}'.format(i['P'], i['I'], i[
-                    'B']) if d_type == 'chair' else ''
-                if i[
-                    'name'].lower() == query.lower() or fullname.lower() == query.lower():
-                    return {'id': int(i['ID']), 'name': i['name']}
