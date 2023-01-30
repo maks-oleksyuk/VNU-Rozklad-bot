@@ -28,10 +28,6 @@ async def cmd_cancel(message: types.Message, state: FSMContext):
     await answer(message, 'choice', 'choice')
 
 
-async def today(message: types.Message):
-    pass
-
-
 def register_handlers_commands(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands='start',
                                 chat_type=types.ChatType.PRIVATE)

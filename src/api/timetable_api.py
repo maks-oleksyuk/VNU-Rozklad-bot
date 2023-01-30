@@ -2,7 +2,7 @@ import json
 from datetime import date, timedelta
 
 import requests
-from database.db import save_groups, save_teachers
+from database.db import save_groups, save_teachers, save_timetable
 
 api_url = 'http://94.130.69.82/cgi-bin/timetable_export.cgi'
 
@@ -53,7 +53,7 @@ async def get_teachers():
         print(f'API Error: {e}\nTable teachers not updated!')
 
 
-async def get_timetable(id, mode,
+async def get_timetable(id: int, mode: str,
                         s_date=date.today().strftime('%d.%m.%Y'),
                         e_date=(date.today() + timedelta(weeks=2))
                         .strftime('%d.%m.%Y')):
@@ -72,8 +72,8 @@ async def get_timetable(id, mode,
         text = json.loads(res.text)
         code = text['psrozklad_export']['code']
         if code == '0':
-            pass
-            # await save_teachers(text['psrozklad_export']['departments'])
+            data = text['psrozklad_export']['roz_items']
+            await save_timetable(id, mode, data)
         else:
             error = text['psrozklad_export']['error']['error_message']
             raise Exception(

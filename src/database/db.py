@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from aiogram import types
 from sqlalchemy import text, select
@@ -76,6 +76,26 @@ async def save_teachers(data: dict):
     conn.commit()
 
 
+async def save_timetable(id: str, mode: str, data: dict):
+    table = meta.tables['timetable']
+    for i in data:
+        stmt = insert(table).values(
+            id=id,
+            mode=mode,
+            name=i['object'],
+            date=datetime.strptime(i['date'], '%d.%m.%Y').date(),
+            lesson_number=i['lesson_number'],
+            lesson_time=i['lesson_time'],
+            room=i['room'],
+            type=i['type'],
+            title=i['title'],
+            teacher=i['teacher'],
+            group=i['group'],
+        )
+        conn.execute(stmt)
+    conn.commit()
+
+
 async def get_departments_by_mode(mode: str):
     table = meta.tables[mode]
     stmt = select(table.c.department).distinct()
@@ -117,3 +137,10 @@ async def get_data_id_and_name(mode: str, query: str):
     stmt = select(table.c.id, table.c.name).where(name == query)
     res = conn.execute(stmt).first()
     return {'id': int(res[0]), 'name': res[1]}
+
+
+async def get_users_data_by_id(uid: int):
+    table = meta.tables['users_data']
+    stmt = select(table.c.d_id, table.c.d_mode).where(table.c.uid == uid)
+    res = conn.execute(stmt).first()
+    return res._asdict()
