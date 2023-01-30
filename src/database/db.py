@@ -103,10 +103,12 @@ async def search(mode: str, query: str):
     """
     table = meta.tables[mode]
     name = table.c.name if mode == 'groups' else table.c.fullname
-    # TODO: Fix search it next variants (Біо-11 - Біо-11з)
     stmt = select(name).filter(name.like(f'%{query}%'))
-    res = conn.execute(stmt).all()
-    return [r for r, in res]
+    if conn.execute(stmt).first()[0] == query:
+        return [conn.execute(stmt).first()[0]]
+    else:
+        res = conn.execute(stmt).all()
+        return [r for r, in res]
 
 
 async def get_data_id_and_name(mode: str, query: str):

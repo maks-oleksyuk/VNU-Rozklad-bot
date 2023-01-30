@@ -2,7 +2,7 @@ from os import getenv
 
 from sqlalchemy import create_engine, inspect, MetaData, Table, Column
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
-    VARCHAR, DATE, TIMESTAMP
+    VARCHAR, TEXT, DATE, TIMESTAMP
 from sqlalchemy.sql import func
 
 engine = create_engine(
@@ -49,7 +49,7 @@ async def db_init():
     if not inspector.has_table('groups'):
         Table(
             'groups', meta,
-            Column('id', SMALLINT(unsigned=True), nullable=False,
+            Column('id', SMALLINT(unsigned=True), unique=True, nullable=False,
                    comment='The group ID.'),
             Column('department', VARCHAR(128), nullable=False,
                    comment='The group department.'),
@@ -59,7 +59,7 @@ async def db_init():
     if not inspector.has_table('teachers'):
         Table(
             'teachers', meta,
-            Column('id', SMALLINT(unsigned=True), nullable=False,
+            Column('id', SMALLINT(unsigned=True), unique=True, nullable=False,
                    comment='The teacher ID.'),
             Column('department', VARCHAR(128), nullable=False,
                    comment='The teacher department.'),
@@ -79,8 +79,26 @@ async def db_init():
             'timetable', meta,
             Column('id', SMALLINT(unsigned=True), nullable=False,
                    comment='The timetable data ID.'),
-            Column('mode', VARCHAR(255), nullable=False,
+            Column('mode', VARCHAR(32), nullable=False,
                    comment='The data mode.'),
+            Column('name', VARCHAR(32), nullable=False,
+                   comment='The data name.'),
+            Column('date', DATE, nullable=False,
+                   comment='The timetable date.'),
+            Column('lesson_number', SMALLINT(unsigned=True), nullable=False,
+                   comment='The lesson number.'),
+            Column('lesson_time', VARCHAR(16), nullable=False,
+                   comment='The lesson time.'),
+            Column('room', VARCHAR(16),
+                   comment='The lesson room.'),
+            Column('type', VARCHAR(8), nullable=False,
+                   comment='The lesson type.'),
+            Column('title', TEXT, nullable=False,
+                   comment='The lesson title.'),
+            Column('teacher', VARCHAR(64),
+                   comment='The lesson teacher.'),
+            Column('group', VARCHAR(64),
+                   comment='The lesson group(s).'),
         )
     meta.create_all(engine)
 
