@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from aiogram import types
-from sqlalchemy import text, select
+from sqlalchemy import text, select, delete
 from sqlalchemy.dialects.mysql import insert
 
 from .db_init import conn, meta
@@ -76,8 +76,12 @@ async def save_teachers(data: dict):
     conn.commit()
 
 
-async def save_timetable(id: str, mode: str, data: dict):
+async def save_timetable(id: str, mode: str, data: dict,
+                         s_date: date, e_date: date):
     table = meta.tables['timetable']
+    conn.execute(delete(table)
+                 .where(table.c.date >= s_date)
+                 .where(table.c.date <= e_date))
     for i in data:
         stmt = insert(table).values(
             id=id,

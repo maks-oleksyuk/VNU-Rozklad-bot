@@ -1,6 +1,7 @@
 from os import getenv
 
-from sqlalchemy import create_engine, inspect, MetaData, Table, Column
+from sqlalchemy import create_engine, inspect, MetaData, \
+    Table, Column, UniqueConstraint
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, TEXT, DATE, TIMESTAMP
 from sqlalchemy.sql import func
@@ -99,6 +100,7 @@ async def db_init():
                    comment='The lesson teacher.'),
             Column('group', VARCHAR(64),
                    comment='The lesson group(s).'),
+            UniqueConstraint('id', 'mode', 'date', 'lesson_number', 'group')
         )
     meta.create_all(engine)
 

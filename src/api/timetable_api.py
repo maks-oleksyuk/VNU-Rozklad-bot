@@ -53,17 +53,15 @@ async def get_teachers():
         print(f'API Error: {e}\nTable teachers not updated!')
 
 
-async def get_timetable(id: int, mode: str,
-                        s_date=date.today().strftime('%d.%m.%Y'),
-                        e_date=(date.today() + timedelta(weeks=2))
-                        .strftime('%d.%m.%Y')):
+async def get_timetable(id: int, mode: str, s_date=date.today(),
+                        e_date=date.today() + timedelta(weeks=2)):
     payload = {
         'req_type': 'rozklad',
         'req_mode': mode,
         'OBJ_ID': id,
         'ros_text': 'separated',
-        'begin_date': s_date,
-        'end_date': e_date,
+        'begin_date': s_date.strftime('%d.%m.%Y'),
+        'end_date': e_date.strftime('%d.%m.%Y'),
         'req_format': 'json',
         'coding_mode': 'UTF8',
     }
@@ -73,7 +71,7 @@ async def get_timetable(id: int, mode: str,
         code = text['psrozklad_export']['code']
         if code == '0':
             data = text['psrozklad_export']['roz_items']
-            await save_timetable(id, mode, data)
+            await save_timetable(id, mode, data, s_date, e_date)
         else:
             error = text['psrozklad_export']['error']['error_message']
             raise Exception(
