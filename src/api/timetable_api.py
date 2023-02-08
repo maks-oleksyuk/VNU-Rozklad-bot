@@ -69,6 +69,7 @@ async def get_timetable(id: int, mode: str, s_date=date.today(),
         res = requests.get(api_url, params=payload)
         text = json.loads(res.text)
         code = text['psrozklad_export']['code']
+        # If the answer is successful, we update the data in the database.
         if code == '0':
             data = text['psrozklad_export']['roz_items']
             await save_timetable(id, mode, data, s_date, e_date)

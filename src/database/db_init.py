@@ -98,9 +98,10 @@ async def db_init():
                    comment='The lesson title.'),
             Column('teacher', VARCHAR(64),
                    comment='The lesson teacher.'),
-            Column('group', VARCHAR(64),
+            Column('group', VARCHAR(128),
                    comment='The lesson group(s).'),
-            UniqueConstraint('id', 'mode', 'date', 'lesson_number', 'group')
+            UniqueConstraint('id', 'mode', 'date',
+                             'lesson_number', 'teacher', 'group')
         )
     meta.create_all(engine)
 

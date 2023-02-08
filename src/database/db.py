@@ -70,7 +70,10 @@ async def save_teachers(data: dict):
         'P': i['P'],
         'I': i['I'],
         'B': i['B'],
-    })) for d in data for i in d['objects'] if i['ID'] != '']
+    })) for d in data for i in d['objects'] if
+        i['ID'] != ''
+        and i['name'].find('Вакансія') == -1
+        and i['name'].find('0,75') == -1]
     stmt = insert(meta.tables['teachers']).values(query_data)
     conn.execute(stmt)
     conn.commit()
@@ -79,7 +82,11 @@ async def save_teachers(data: dict):
 async def save_timetable(id: str, mode: str, data: dict,
                          s_date: date, e_date: date):
     table = meta.tables['timetable']
+    # Currently, there is no functionality to track deleted rows
+    # from the API query result, so all are overwritten.
     conn.execute(delete(table)
+                 .where(table.c.id == id)
+                 .where(table.c.mode == mode)
                  .where(table.c.date >= s_date)
                  .where(table.c.date <= e_date))
     for i in data:
@@ -98,6 +105,19 @@ async def save_timetable(id: str, mode: str, data: dict,
         )
         conn.execute(stmt)
     conn.commit()
+
+
+async def get_timetable(id: str, mode: str,
+                        s_date: date = date.today(),
+                        e_date: date = date.today()):
+    table = meta.tables['timetable']
+    stmt = (select(table.c)
+            .where(table.c.id == id)
+            .where(table.c.mode == mode)
+            .where(table.c.date >= s_date)
+            .where(table.c.date <= e_date))
+    res = conn.execute(stmt).all()
+    return [r._asdict() for r in res]
 
 
 async def get_departments_by_mode(mode: str):
@@ -128,11 +148,14 @@ async def search(mode: str, query: str):
     table = meta.tables[mode]
     name = table.c.name if mode == 'groups' else table.c.fullname
     stmt = select(name).filter(name.like(f'%{query}%'))
-    if conn.execute(stmt).first()[0] == query:
-        return [conn.execute(stmt).first()[0]]
-    else:
-        res = conn.execute(stmt).all()
-        return [r for r, in res]
+    try:
+        if conn.execute(stmt).first()[0] == query:
+            return [conn.execute(stmt).first()[0]]
+        else:
+            res = conn.execute(stmt).all()
+            return [r for r, in res]
+    except TypeError:
+        return []
 
 
 async def get_data_id_and_name(mode: str, query: str):
@@ -145,6 +168,8 @@ async def get_data_id_and_name(mode: str, query: str):
 
 async def get_users_data_by_id(uid: int):
     table = meta.tables['users_data']
-    stmt = select(table.c.d_id, table.c.d_mode).where(table.c.uid == uid)
+    stmt = (select(table.c.d_id, table.c.d_mode,
+                   table.c.d_name, table.c.d_date)
+            .where(table.c.uid == uid))
     res = conn.execute(stmt).first()
     return res._asdict()

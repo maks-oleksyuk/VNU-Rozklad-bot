@@ -19,19 +19,19 @@ async def now(message: types.Message):
         await answer(message, "no-data")
 
 
-async def today(message: types.Message):
-    id = await user_data(message, "get_data_id", None)
-    try:
-        if id[0] != None:
-            await schedule(message, id[2], id)
-            await user_data(message, "data", [id[0], id[1], id[2], date.today()])
-            col = await get_column(date.today().weekday(), 0, 0)
-            mes = await schedule_data(message, "get_col", [col, id[0]])
-            await answer(message, "data", mes[0])
-        else:
-            await answer(message, "no-data")
-    except:
-        await answer(message, "no-data")
+# async def today(message: types.Message):
+#     id = await user_data(message, "get_data_id", None)
+#     try:
+#         if id[0] != None:
+#             await schedule(message, id[2], id)
+#             await user_data(message, "data", [id[0], id[1], id[2], date.today()])
+#             col = await get_column(date.today().weekday(), 0, 0)
+#             mes = await schedule_data(message, "get_col", [col, id[0]])
+#             await answer(message, "data", mes[0])
+#         else:
+#             await answer(message, "no-data")
+#     except:
+#         await answer(message, "no-data")
 
 
 async def tomorrow(message: types.Message):
@@ -133,7 +133,8 @@ async def get_day_timetable(message: types.Message, date):
                 mes = await schedule_data(message, "get_col", [col, id[0]])
                 await answer(message, "data", mes[0])
             else:
-                mes = await schedule_for_the_date(message, id[2], [id[0], id[1]], SD)
+                mes = await schedule_for_the_date(message, id[2],
+                                                  [id[0], id[1]], SD)
                 await user_data(message, "data", [id[0], id[1], id[2], SD])
                 await answer(message, "data", mes)
         else:
@@ -143,14 +144,16 @@ async def get_day_timetable(message: types.Message, date):
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):
-    dp.register_message_handler(now, commands="now", chat_type=types.ChatType.PRIVATE)
-    dp.register_message_handler(
-        today, commands="today", chat_type=types.ChatType.PRIVATE
-    )
+    dp.register_message_handler(now, commands="now",
+                                chat_type=types.ChatType.PRIVATE)
+    # dp.register_message_handler(
+    #     today, commands="today", chat_type=types.ChatType.PRIVATE
+    # )
     dp.register_message_handler(
         tomorrow, commands="tomorrow", chat_type=types.ChatType.PRIVATE
     )
-    dp.register_message_handler(week, commands="week", chat_type=types.ChatType.PRIVATE)
+    dp.register_message_handler(week, commands="week",
+                                chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(
         nextweek, commands="nextweek", chat_type=types.ChatType.PRIVATE
     )

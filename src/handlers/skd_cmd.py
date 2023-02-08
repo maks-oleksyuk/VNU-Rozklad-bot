@@ -1,11 +1,14 @@
+import api.timetable_api as api
+import database.db as db
 from aiogram import Dispatcher, types
-from api.timetable_api import get_timetable
-from database.db import get_users_data_by_id
+from services.timetable import formation_schedule_for_day
 
 
 async def today(message: types.Message):
-    user_data = await get_users_data_by_id(message.from_user.id)
-    await get_timetable(user_data['d_id'], user_data['d_mode'])
+    user_data = await db.get_users_data_by_id(message.from_user.id)
+    await api.get_timetable(user_data['d_id'], user_data['d_mode'])
+    data = await db.get_timetable(user_data['d_id'], user_data['d_mode'])
+    await formation_schedule_for_day(message, data, user_data)
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):
