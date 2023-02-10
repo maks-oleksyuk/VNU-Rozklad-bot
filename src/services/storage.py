@@ -5,8 +5,7 @@ from api.timetable_api import get_groups, get_teachers
 from database.db import get_departments_by_mode
 
 chair, faculty = [], []
-week = ['Понеділок', 'Вівторок', 'Середа', 'Четвер',
-        "П'ятниця", 'Субота', 'Неділя'] * 2
+week = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
 
 message = {
     'start': '👋 *Привіт\\!*\n\n'

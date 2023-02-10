@@ -1,11 +1,10 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-# from bot.config import (chair, get_group_id, get_teacher_id, is_date,
-#                         search_group, search_teacher)
 from database.db import save_user_data, search
 from services.message import answer, reply
-from services.storage import chair, faculty
+from services.storage import chair, faculty, week
+from services.timetable import change_week_day
 
 from .commands import cmd_cancel
 from .skd_cmd import today
@@ -25,11 +24,12 @@ async def text(message: types.Message):
             await FSMTeacher.chair.set()
             await answer(message, 'chair', 'chair')
         case 'сьогодні':
-            await sched_cmd.today(message)
+            await today(message)
         case 'На тиждень':
             await sched_cmd.week(message)
-        case 'Пн' | 'Вт' | 'Ср' | 'Чт' | 'Пт' | 'Сб' | 'Нд' | '🔘':
-            await sched_cmd.get_day_timetable(message, None)
+        case 'пн' | 'вт' | 'ср' | 'чт' | 'пт' | 'сб' | 'нд' | '🔘':
+            await change_week_day(message)
+            # await sched_cmd.get_day_timetable(message, None)
         case '⬅️ тиждень':
             await sched_cmd.changeweek(message, 'prev')
         case 'тиждень ➡️':

@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+import api.timetable_api as api
 from aiogram import types
 from sqlalchemy import text, select, delete
 from sqlalchemy.dialects.mysql import insert
@@ -44,6 +45,10 @@ async def save_user_data(message: types.Message,
     )
     conn.execute(stmt)
     conn.commit()
+
+
+async def update_user_data_date(message: types.Message, date: date):
+    pass
 
 
 async def save_groups(data: dict):
@@ -102,6 +107,8 @@ async def save_timetable(id: str, mode: str, data: dict,
             title=i['title'],
             teacher=i['teacher'],
             group=i['group'],
+            replacement=i['replacement'],
+            reservation=i['reservation'],
         )
         conn.execute(stmt)
     conn.commit()
@@ -110,6 +117,7 @@ async def save_timetable(id: str, mode: str, data: dict,
 async def get_timetable(id: str, mode: str,
                         s_date: date = date.today(),
                         e_date: date = date.today()):
+    await api.get_timetable(id, mode, s_date)
     table = meta.tables['timetable']
     stmt = (select(table.c)
             .where(table.c.id == id)

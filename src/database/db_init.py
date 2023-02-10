@@ -98,8 +98,10 @@ async def db_init():
                    comment='The lesson title.'),
             Column('teacher', VARCHAR(64),
                    comment='The lesson teacher.'),
-            Column('group', VARCHAR(128),
+            Column('group', VARCHAR(255),
                    comment='The lesson group(s).'),
+            Column('replacement', VARCHAR(255)),
+            Column('reservation', VARCHAR(255)),
             UniqueConstraint('id', 'mode', 'date',
                              'lesson_number', 'teacher', 'group')
         )

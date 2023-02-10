@@ -1,4 +1,3 @@
-import json
 from datetime import date
 from os import getenv
 
@@ -27,56 +26,6 @@ async def on_shutdown(dp: Dispatcher):
     print('Bot Stopped')
 
 
-async def get_group_id(query):
-    with open("json/faculties.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            for g in d["objects"]:
-                if g["name"].lower() == query.lower():
-                    return [g["ID"], g["name"]]
-
-
-async def get_teacher_id(query):
-    with open("json/chair.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            for t in d["objects"]:
-                i = t["P"] + " " + t["I"] + " " + t["B"]
-                if i.lower() == query.lower():
-                    return [t["ID"], t["name"]]
-
-
-async def get_teacher_full_name(query):
-    with open("json/chair.min.json") as f:
-        text = json.loads(f.read())
-        for d in text["psrozklad_export"]["departments"]:
-            for t in d["objects"]:
-                if query.lower().find(t["name"].lower()) != -1:
-                    i = t["P"] + " " + t["I"] + " " + t["B"]
-                    return i
-
-
-async def get_column(weekday, week, next):
-    col = ""
-    colums = [
-        "mon",
-        "tue",
-        "wed",
-        "thu",
-        "fri",
-        "sat",
-        "sun",
-        "week",
-    ]
-    if weekday is not None:
-        col = colums[weekday]
-    if week:
-        col = colums[-1]
-    if next:
-        col = "n_" + col
-    return col
-
-
 async def is_date(string, fuzzy=False):
     try:
         parse(string, fuzzy=fuzzy)
@@ -96,22 +45,3 @@ async def is_date(string, fuzzy=False):
 
     except ValueError:
         return False
-
-
-async def multy_replase(text, all=None):
-    """Formatting special characters for MarkdownV2.
-
-    Args:
-        text (str): Text to be formatted.
-        all (bool, optional): If need replase all characters. Defaults to None.
-
-    Returns:
-        _type_: Formatted text in MarkdownV2.
-    """
-    text = text.replace(" (за професійним спрямуванням)", "")
-    chars = "[]()>#+-={|}.!"
-    if all:
-        chars += "_*~`"
-    for c in chars:
-        text = text.replace(c, "\\" + c)
-    return text
