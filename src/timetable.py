@@ -37,7 +37,8 @@ async def schedule(message: types.Message, mode, id):
         for d in range(14):
             cd = (ND - timedelta(days=NW - d)).strftime("%d.%m.%Y")
             if d == 0 or d == 7:
-                end_date = (ND - timedelta(days=NW - d - 6)).strftime("%d.%m.%y")
+                end_date = (ND - timedelta(days=NW - d - 6)).strftime(
+                    "%d.%m.%y")
                 week_message = ttype + "`\n🔹 з " + cd + " по " + end_date + "*"
             item = []
             item = ttype + "`\n🔹 на " + cd + " (" + week[d] + ")*"
@@ -48,10 +49,12 @@ async def schedule(message: types.Message, mode, id):
                     if has_item != i["date"]:
                         has_item = i["date"]
                         week_message += (
-                                "\n\n🔅 _*" + i["date"][:5] + " " + week[d] + "*_"
+                                "\n\n🔅 _*" + i["date"][:5] + " " + week[
+                            d] + "*_"
                         )
                     item = await add_lesson(item, i, lsn)
-                    week_message = await add_week_lesson(week_message, i, lsn, mode)
+                    week_message = await add_week_lesson(week_message, i, lsn,
+                                                         mode)
                     lsn = i["lesson_number"]
             if has_item == 0:
                 item += "\n\n🎉 *Вітаю!* В тебе вихідний 😎"
@@ -74,46 +77,6 @@ async def schedule(message: types.Message, mode, id):
         await schedule_data(message, "update", schedule_arr)
     elif not schedule_arr[5] and res[6] and SD < res[5] and SD > res[4]:
         await schedule_data(message, "week_update", schedule_arr)
-
-
-async def schedule_for_the_date(message: types.Message, mode, tid, date):
-    """Forming a message with a schedule for a specific date
-
-    Args:
-        message (types.Message): message with additional data
-        mode (str): type of schedule
-        tid (obj): data about the object for which the schedule is formed
-        date (datetime): date on which to generate the schedule
-
-    Returns:
-        str: Messages schedule for the date
-    """
-    res = await get_schedule(tid[0], mode, date)
-    if mode == "group":
-        ttype = "🎓 *Розклад групи `" + tid[1]
-    if mode == "teacher":
-        ttype = "💼 *Розклад викладача `" + tid[1]
-    mes = (
-            ttype
-            + "`\n🔹 на "
-            + date.strftime("%d.%m.%Y")
-            + " ("
-            + week[date.weekday()]
-            + ")*"
-    )
-    if (
-            res["psrozklad_export"]["code"] == "0"
-            and len(res["psrozklad_export"]["roz_items"]) != 0
-    ):
-        lsn = 0
-        for i in res["psrozklad_export"]["roz_items"]:
-            if i["date"] == date.strftime("%d.%m.%Y") and i["lesson_number"] != "0":
-                mes = await add_lesson(mes, i, lsn)
-                lsn = i["lesson_number"]
-    else:
-        mes += "\n\n🔺 Даних не знайдено!"
-    mes = await multy_replase(mes)
-    return mes
 
 
 async def now_subject(message: types.Message, mode, tid):
@@ -157,7 +120,8 @@ async def now_subject(message: types.Message, mode, tid):
                     if i["teacher"]:
                         teacher = await get_teacher_full_name(i["teacher"])
                         mes += "\n💼 " + teacher
-                    if i["room"] and i["group"] and await has_need_group(i["group"]):
+                    if i["room"] and i["group"] and await has_need_group(
+                            i["group"]):
                         mes += "\n👥 " + i["room"] + "  |  " + i["group"]
                     elif i["room"]:
                         mes += "\n🔑 " + i["room"]

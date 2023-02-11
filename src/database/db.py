@@ -2,12 +2,13 @@ from datetime import date, datetime
 
 import api.timetable_api as api
 from aiogram import types
-from sqlalchemy import text, select, delete
+from sqlalchemy import text, select, update, delete
 from sqlalchemy.dialects.mysql import insert
 
 from .db_init import conn, meta
 
 
+# TODO: Create admin stats function
 async def insert_update_user(message: types.Message):
     uid = message.from_user.id
     name = message.from_user.full_name
@@ -47,7 +48,14 @@ async def save_user_data(message: types.Message,
     conn.commit()
 
 
-async def update_user_data_date(message: types.Message, date: date):
+async def update_user_data_date(id: int, date: date):
+    table = meta.tables['users_data']
+    conn.execute(update(table).values(d_date=date).where(table.c.uid == id))
+    conn.commit()
+
+
+async def check_user_data_exist(message: types.Message):
+    table = meta.tables['users_data']
     pass
 
 
@@ -95,6 +103,9 @@ async def save_timetable(id: str, mode: str, data: dict,
                  .where(table.c.date >= s_date)
                  .where(table.c.date <= e_date))
     for i in data:
+        # We look for matches in groups so as not to store unnecessary data.
+        # For example: general (Group, name, ...) to general.
+        g = i['group'].find('І (')
         stmt = insert(table).values(
             id=id,
             mode=mode,
@@ -104,9 +115,9 @@ async def save_timetable(id: str, mode: str, data: dict,
             lesson_time=i['lesson_time'],
             room=i['room'],
             type=i['type'],
-            title=i['title'],
+            title=i['title'].replace(' (за професійним спрямуванням)', ''),
             teacher=i['teacher'],
-            group=i['group'],
+            group=i['group'] if g == -1 else i['group'][:g + 1],
             replacement=i['replacement'],
             reservation=i['reservation'],
         )

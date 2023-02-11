@@ -20,7 +20,7 @@ async def cmd_about(message: types.Message):
     await insert_update_user(message)
 
 
-async def cmd_cancel(message: types.Message, state: FSMContext):
+async def cmd_cancel(message: types.Message, state: FSMContext = None):
     """ Allow user to cancel any action """
     if state:
         await state.finish()

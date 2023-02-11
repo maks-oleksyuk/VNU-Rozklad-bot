@@ -3,7 +3,7 @@ from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
 from database.db import get_objects_by_department, get_users_data_by_id, search
 
-from .storage import chair, faculty, week
+from .storage import chair, faculty
 
 
 async def get_reply_keyboard_by_key(message: types.Message,
@@ -39,9 +39,9 @@ async def get_reply_keyboard_by_key(message: types.Message,
             data = await search('teachers', message.text)
             markup = await one_column_reply_keyboard(markup, data, True)
         case 'timetable':
-            days = week
+            days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
             res = await get_users_data_by_id(message.from_user.id)
-            days[res['d_date'].weekday()] = '🔘'
+            days[res['d_date'].weekday()] = '🟢'
             markup.row(*days)
             markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
             markup.row('Змінити запит', 'На тиждень', '📆 Ввести дату')

@@ -83,64 +83,64 @@ async def nextweek(message: types.Message):
         await answer(message, "no-data", None)
 
 
-async def changeweek(message: types.Message, type):
-    id = await user_data(message, "get_data_id", None)
-    try:
-        if id[0] != None:
-            if type == "next":
-                SD = id[3] + timedelta(weeks=1)
-            elif type == "prev":
-                SD = id[3] - timedelta(weeks=1)
-            message.text = "🔘"
-            await user_data(message, "data", [id[0], id[1], id[2], SD])
-            await get_day_timetable(message, SD)
-        else:
-            await answer(message, "no-data")
-    except:
-        await answer(message, "no-data", None)
+# async def changeweek(message: types.Message, type):
+#     id = await user_data(message, "get_data_id", None)
+#     try:
+#         if id[0] != None:
+#             if type == "next":
+#                 SD = id[3] + timedelta(weeks=1)
+#             elif type == "prev":
+#                 SD = id[3] - timedelta(weeks=1)
+#             message.text = "🟢"
+#             await user_data(message, "data", [id[0], id[1], id[2], SD])
+#             await get_day_timetable(message, SD)
+#         else:
+#             await answer(message, "no-data")
+#     except:
+#         await answer(message, "no-data", None)
 
 
-async def get_day_timetable(message: types.Message, date):
-    id = await user_data(message, "get_data_id", None)
-    try:
-        if id[0] != None:
-            days = {
-                "Пн": 0,
-                "Вт": 1,
-                "Ср": 2,
-                "Чт": 3,
-                "Пт": 4,
-                "Сб": 5,
-                "Нд": 6,
-                "🔘": id[3].weekday(),
-            }
-            if message.text == "🔘":
-                SD = id[3]
-                day = days[message.text]
-            if date:
-                SD = date
-                day = date.weekday()
-            else:
-                day = days[message.text]
-                SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=day)
-            res = await schedule_data(None, "get_date", id[0])
-            if SD >= res[0] and SD <= res[1]:
-                await user_data(message, "data", [id[0], id[1], id[2], SD])
-                if SD - res[0] < timedelta(days=7):
-                    col = await get_column(day, 0, 0)
-                else:
-                    col = await get_column(day, 0, 1)
-                mes = await schedule_data(message, "get_col", [col, id[0]])
-                await answer(message, "data", mes[0])
-            else:
-                mes = await schedule_for_the_date(message, id[2],
-                                                  [id[0], id[1]], SD)
-                await user_data(message, "data", [id[0], id[1], id[2], SD])
-                await answer(message, "data", mes)
-        else:
-            await answer(message, "no-data")
-    except:
-        await answer(message, "no-data")
+# async def get_day_timetable(message: types.Message, date):
+#     id = await user_data(message, "get_data_id", None)
+#     try:
+#         if id[0] != None:
+#             days = {
+#                 "Пн": 0,
+#                 "Вт": 1,
+#                 "Ср": 2,
+#                 "Чт": 3,
+#                 "Пт": 4,
+#                 "Сб": 5,
+#                 "Нд": 6,
+#                 "🟢": id[3].weekday(),
+#             }
+#             if message.text == "🟢":
+#                 SD = id[3]
+#                 day = days[message.text]
+#             if date:
+#                 SD = date
+#                 day = date.weekday()
+#             else:
+#                 day = days[message.text]
+#                 SD = id[3] - timedelta(id[3].weekday()) + timedelta(days=day)
+#             res = await schedule_data(None, "get_date", id[0])
+#             if SD >= res[0] and SD <= res[1]:
+#                 await user_data(message, "data", [id[0], id[1], id[2], SD])
+#                 if SD - res[0] < timedelta(days=7):
+#                     col = await get_column(day, 0, 0)
+#                 else:
+#                     col = await get_column(day, 0, 1)
+#                 mes = await schedule_data(message, "get_col", [col, id[0]])
+#                 await answer(message, "data", mes[0])
+#             else:
+#                 mes = await schedule_for_the_date(message, id[2],
+#                                                   [id[0], id[1]], SD)
+#                 await user_data(message, "data", [id[0], id[1], id[2], SD])
+#                 await answer(message, "data", mes)
+#         else:
+#             await answer(message, "no-data")
+#     except:
+#         await answer(message, "no-data")
 
 
 def register_handlers_schedule_commands(dp: Dispatcher):

@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from database.db import save_user_data, search
 from services.message import answer, reply
 from services.storage import chair, faculty, week
-from services.timetable import change_week_day
+from services.timetable import change_week_day, change_week
 
 from .commands import cmd_cancel
 from .skd_cmd import today
@@ -27,15 +27,14 @@ async def text(message: types.Message):
             await today(message)
         case 'На тиждень':
             await sched_cmd.week(message)
-        case 'пн' | 'вт' | 'ср' | 'чт' | 'пт' | 'сб' | 'нд' | '🔘':
+        case 'пн' | 'вт' | 'ср' | 'чт' | 'пт' | 'сб' | 'нд' | '🟢':
             await change_week_day(message)
-            # await sched_cmd.get_day_timetable(message, None)
         case '⬅️ тиждень':
-            await sched_cmd.changeweek(message, 'prev')
+            await change_week(message, 'prev')
         case 'тиждень ➡️':
-            await sched_cmd.changeweek(message, 'next')
+            await change_week(message, 'next')
         case 'Змінити запит':
-            await cancel(message, None)
+            await cmd_cancel(message)
         case '📆 Ввести дату':
             await answer(message, 'set-date')
             await FSMSetDate.set_date.set()
