@@ -54,11 +54,6 @@ async def update_user_data_date(id: int, date: date):
     conn.commit()
 
 
-async def check_user_data_exist(message: types.Message):
-    table = meta.tables['users_data']
-    pass
-
-
 async def save_groups(data: dict):
     conn.execute(meta.tables['groups'].delete())
     query_data = []
@@ -191,4 +186,4 @@ async def get_users_data_by_id(uid: int):
                    table.c.d_name, table.c.d_date)
             .where(table.c.uid == uid))
     res = conn.execute(stmt).first()
-    return res._asdict()
+    return res._asdict() if res else None

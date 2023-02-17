@@ -42,13 +42,13 @@ async def formation_schedule_for_day(message: types.Message,
                            + md.underline(md.bold(md.quote(f"{i['title']}")))
             lessons += md.italic(md.quote(f" ({i['type']})\n"))
             if i['teacher']:
-                lessons += md.italic(md.quote(f"💼 {i['teacher']}\n"))
+                lessons += md.italic(md.quote(f"👨‍🏫 {i['teacher']}\n"))
             if i['room'] and i['group']:
                 lessons += md.quote(f"🏷 {i['room']}")
                 lessons += md.quote(f"  |  {i['group']}\n")
             else:
                 if i['room']:
-                    lessons += md.quote(f"🔑 {i['room']}\n")
+                    lessons += md.quote(f"🚪 {i['room']}\n")
                 if i['group']:
                     lessons += md.quote(f"👥 {i['group']}\n")
         mes = f'{mode} {name}\n{date}{lessons}'
@@ -64,18 +64,24 @@ async def formation_schedule_for_day(message: types.Message,
 
 async def change_week_day(message: types.Message):
     ud = await db.get_users_data_by_id(message.from_user.id)
-    if message.text == '🟢':
-        await timetable_for_date(message, ud['d_date'])
+    if ud:
+        if message.text == '🟢':
+            await timetable_for_date(message, ud['d_date'])
+        else:
+            x = week.index(message.text)
+            y = ud['d_date'].weekday()
+            date = ud['d_date'] + timedelta(days=x - y)
+            await db.update_user_data_date(message.from_user.id, date)
+            await timetable_for_date(message, date)
     else:
-        x = week.index(message.text)
-        y = ud['d_date'].weekday()
-        date = ud['d_date'] + timedelta(days=x - y)
-        await db.update_user_data_date(message.from_user.id, date)
-        await timetable_for_date(message, date)
+        await answer(message, 'no-ud-exist', 'choice')
 
 
 async def change_week(message: types.Message, side: str):
     ud = await db.get_users_data_by_id(message.from_user.id)
-    date = ud['d_date'] + timedelta(weeks=1 if side == 'next' else -1)
-    await db.update_user_data_date(message.from_user.id, date)
-    await timetable_for_date(message, date)
+    if ud:
+        date = ud['d_date'] + timedelta(weeks=1 if side == 'next' else -1)
+        await db.update_user_data_date(message.from_user.id, date)
+        await timetable_for_date(message, date)
+    else:
+        await answer(message, 'no-ud-exist', 'choice')
