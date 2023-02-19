@@ -1,10 +1,9 @@
 from os import getenv
 
-from sqlalchemy import create_engine, inspect, MetaData, \
+from sqlalchemy import create_engine, inspect, MetaData, text, \
     Table, Column, UniqueConstraint
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, TEXT, DATE, TIMESTAMP
-from sqlalchemy.sql import func
 
 engine = create_engine(
     'mariadb+mariadbconnector://{}:{}@db:3306/{}'.format(
@@ -31,7 +30,8 @@ async def db_init():
                    comment='The Telegram pseudonym of this user.'),
             Column('status', BOOLEAN, nullable=False, server_default='1',
                    comment='Whether the user is active or blocked.'),
-            Column('login', TIMESTAMP, nullable=False, default=func.utcnow(),
+            Column('login', TIMESTAMP, nullable=False, server_default=text(
+                'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
                    comment='The time that the user last logged in.')
         )
     if not inspector.has_table('users_data'):

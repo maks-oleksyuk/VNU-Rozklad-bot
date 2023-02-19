@@ -1,13 +1,13 @@
+import handlers.skd_cmd as skd_cmd
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from database.db import save_user_data, search
 from services.message import answer, reply
-from services.storage import chair, faculty, week
+from services.storage import chair, faculty
 from services.timetable import change_week_day, change_week
 
 from .commands import cmd_cancel
-from .skd_cmd import today
 
 
 # -----------------------------------------------------------
@@ -24,16 +24,16 @@ async def text(message: types.Message):
             await FSMTeacher.chair.set()
             await answer(message, 'chair', 'chair')
         case 'сьогодні':
-            await today(message)
-        case 'На тиждень':
-            await sched_cmd.week(message)
+            await skd_cmd.today(message)
+        case 'на тиждень':
+            await skd_cmd.week(message)
         case 'пн' | 'вт' | 'ср' | 'чт' | 'пт' | 'сб' | 'нд' | '🟢':
             await change_week_day(message)
         case '⬅️ тиждень':
             await change_week(message, 'prev')
         case 'тиждень ➡️':
             await change_week(message, 'next')
-        case 'Змінити запит':
+        case '🔄 Змінити запит':
             await cmd_cancel(message)
         case '📆 Ввести дату':
             await answer(message, 'set-date')
@@ -79,7 +79,7 @@ async def set_group_search(message: types.Message, state: FSMContext):
         if len(groups) == 1:
             await state.finish()
             await save_user_data(message, 'group')
-            await today(message)
+            await skd_cmd.today(message)
         elif len(groups) > 1:
             await reply(message, 'good-search', 'search-group')
         else:
@@ -127,7 +127,7 @@ async def set_teacher_search(message: types.Message, state: FSMContext):
             await state.finish()
             message.text = teachers[0]
             await save_user_data(message, 'teacher')
-            await today(message)
+            await skd_cmd.today(message)
         elif len(teachers) > 1:
             await reply(message, 'good-search', 'search-teacher')
         else:

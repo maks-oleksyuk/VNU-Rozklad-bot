@@ -18,18 +18,25 @@ async def timetable_for_date(message: types.Message, date: date):
     await formation_schedule_for_day(message, data, ud)
 
 
+async def timetable_for_week(message: types.Message, date: date):
+    ud = await db.get_users_data_by_id(message.from_user.id)
+    sdate = date - timedelta(days=date.weekday())
+    edate = sdate + timedelta(days=6)
+    data = await db.get_timetable(ud['d_id'], ud['d_mode'], sdate, edate)
+    await formation_schedule_for_week(message, data, ud, sdate, edate)
+
+
 async def formation_schedule_for_day(message: types.Message,
-                                     data: list, user_data: dict):
+                                     data: list, ud: dict):
     # If we get any results, we create a message to send.
     if data:
         mode, lessons = '', ''
-        if user_data['d_mode'] == 'group':
+        if ud['d_mode'] == 'group':
             mode = md.bold('🎓 Розклад групи')
-        if user_data['d_mode'] == 'teacher':
+        if ud['d_mode'] == 'teacher':
             mode = md.bold('💼 Розклад викладача')
-        name = md.code(md.quote(user_data['d_name']))
-        date = user_data['d_date'].strftime('🔹 на %d.%m.%Y (%A)\n')
-        date = md.bold(md.quote(date))
+        name = md.code(md.quote(ud['d_name']))
+        date = md.bold(md.quote(ud['d_date'].strftime('🔹 на %d.%m.%Y (%A)\n')))
         for i in data:
             time = f"\n🔅 {i['lesson_number']} Пара ({i['lesson_time'].replace('-', ' - ')})\n"
             lessons += md.italic(md.quote(time))
@@ -55,9 +62,47 @@ async def formation_schedule_for_day(message: types.Message,
         await answer_text(message, mes, 'timetable')
     # If there is no data, but the request is for a day off,
     # we will send a corresponding message about it.
-    elif user_data['d_date'].isoweekday() > 5:
+    elif ud['d_date'].isoweekday() > 5:
         await answer(message, 'holiday', 'timetable')
     # We send a message about missing data.
+    else:
+        await answer(message, 'no-data', 'timetable')
+
+
+async def formation_schedule_for_week(message: types.Message, data: list,
+                                      ud: dict, sdate: date, edate: date):
+    # If we get any results, we create a message to send.
+    if data:
+        mode, lessons, day, lsn = '', '', '', 0
+        if ud['d_mode'] == 'group':
+            mode = md.bold('🎓 Розклад групи')
+        if ud['d_mode'] == 'teacher':
+            mode = md.bold('💼 Розклад викладача')
+        name = md.code(md.quote(ud['d_name']))
+        date = md.bold(md.quote(
+            sdate.strftime('🔹 з %d.%m.%Y') + edate.strftime(' по %d.%m.%Y')))
+        for i in data:
+            if day != i['date']:
+                day = i['date']
+                lsn = 0
+                lessons += md.italic(md.quote(
+                    i['date'].strftime('\n\n🔅 %d.%m %A')))
+            if lsn == i['lesson_number']:
+                lessons += md.bold('\n ╰  ')
+            else:
+                lsn = i['lesson_number']
+                lessons += md.bold(f"\n {i['lesson_number']}\\. ")
+            if i['reservation']:
+                lessons += md.quote(f"{i['reservation']}")
+            if i['title']:
+                lessons += md.quote(f"{i['title']}")
+            if ud['d_mode'] == 'group' and await has_need_group(i['group']):
+                lessons += ' \\| '
+                lessons += md.bold(md.italic(md.quote(f"{i['group']}")))
+            if ud['d_mode'] == 'teacher':
+                lessons += ' \\| ' + md.italic(md.quote(f"{i['group']}"))
+        mes = f'{mode} {name}\n{date}{lessons}'
+        await answer_text(message, mes, 'timetable')
     else:
         await answer(message, 'no-data', 'timetable')
 
@@ -85,3 +130,19 @@ async def change_week(message: types.Message, side: str):
         await timetable_for_date(message, date)
     else:
         await answer(message, 'no-ud-exist', 'choice')
+
+
+async def has_need_group(txt):
+    """Checking for specified elements in the text
+
+    Args:
+        txt str: Text to check
+
+    Returns:
+        bool: True if found and False if not
+    """
+    return True if (
+            txt.find('підгр.') != -1
+            or txt.find('част. групи') != -1
+            or txt.find('Збірна група') != -1
+    ) else False

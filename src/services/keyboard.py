@@ -44,7 +44,7 @@ async def get_reply_keyboard_by_key(message: types.Message,
             days[res['d_date'].weekday()] = '🟢'
             markup.row(*days)
             markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
-            markup.row('Змінити запит', 'На тиждень', '📆 Ввести дату')
+            markup.row('🔄 Змінити запит', 'на тиждень', 'Ввести дату 📆')
     return markup
 
 
