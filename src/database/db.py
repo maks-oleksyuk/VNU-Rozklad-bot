@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 import api.timetable_api as api
 from aiogram import types
-from sqlalchemy import text, select, update, delete
+from sqlalchemy import text, select, update, delete, func
 from sqlalchemy.dialects.mysql import insert
 
 from .db_init import conn, meta
@@ -185,5 +185,12 @@ async def get_users_data_by_id(uid: int):
     stmt = (select(table.c.d_id, table.c.d_mode,
                    table.c.d_name, table.c.d_date)
             .where(table.c.uid == uid))
+    res = conn.execute(stmt).first()
+    return res._asdict() if res else None
+
+
+async def get_teacher_full_name(name: str):
+    table = meta.tables['teachers']
+    stmt = select(table.c.fullname).where(func.instr(name, table.c.name))
     res = conn.execute(stmt).first()
     return res._asdict() if res else None

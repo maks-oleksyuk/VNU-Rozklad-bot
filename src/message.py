@@ -1,18 +1,8 @@
 from aiogram import types
 
-from keyboard import setKeyboard
-
 
 async def answer(message: types.Message, option, data=None):
     match option:
-        case "data":
-            await message.answer(
-                data, parse_mode="MarkdownV2",
-                reply_markup=await setKeyboard("timetable", message))
-        case "no-data":
-            await message.answer(
-                "🌀 Потрібнe оновлення даних",
-                reply_markup=await setKeyboard("choice"))
         case "set-date":
             await message.answer(
                 "📆 *Введіть дату:*\n"

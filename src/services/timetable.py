@@ -1,6 +1,5 @@
 import locale
-from datetime import date
-from datetime import timedelta
+from datetime import date, time, datetime, timedelta
 
 import database.db as db
 from aiogram import types
@@ -10,6 +9,12 @@ from .message import answer, answer_text
 from .storage import week
 
 locale.setlocale(locale.LC_ALL, 'uk_UA.UTF-8')
+
+
+async def now_subject(message: types.Message, date: date):
+    ud = await db.get_users_data_by_id(message.from_user.id)
+    data = await db.get_timetable(ud['d_id'], ud['d_mode'], date, date)
+    await formation_schedule_for_now_subject(message, data, ud)
 
 
 async def timetable_for_date(message: types.Message, date: date):
@@ -24,6 +29,50 @@ async def timetable_for_week(message: types.Message, date: date):
     edate = sdate + timedelta(days=6)
     data = await db.get_timetable(ud['d_id'], ud['d_mode'], sdate, edate)
     await formation_schedule_for_week(message, data, ud, sdate, edate)
+
+
+async def formation_schedule_for_now_subject(message: types.Message,
+                                             data: list, ud: dict):
+    if data:
+        mode, lesson = '', ''
+        if ud['d_mode'] == 'group':
+            mode = md.bold('🎓 Група')
+        if ud['d_mode'] == 'teacher':
+            mode = md.bold('💼 Викладач')
+        name = md.code(md.quote(ud['d_name']))
+        has_now_subject = False
+        for i in data:
+            s = time.fromisoformat(i['lesson_time'][:5])
+            n = datetime.now().time()
+            e = time.fromisoformat(i['lesson_time'][6:])
+            if s <= n <= e:
+                has_now_subject = True
+                if i['reservation']:
+                    lesson += md.bold(md.quote(f"📌 {i['reservation']}\n"))
+                if i['replacement']:
+                    lesson += md.bold(md.quote(f"❗️ {i['replacement']}\n"))
+                if i['title']:
+                    lesson += md.bold(md.quote(f"📚 {i['title']}"))
+                lesson += md.italic(md.quote(f" ({i['type']})\n"))
+                if ud['d_mode'] == 'group':
+                    teacher = await db.get_teacher_full_name(i['teacher'])
+                    teacher = teacher['fullname'] if teacher else i['teacher']
+                    lesson += md.quote(f'💼 {teacher}\n')
+                if i['room']:
+                    lesson += md.quote(f"🚪 {i['room']}\n")
+                if i['group']:
+                    lesson += md.quote(f"👥 {i['group']}\n")
+                st = timedelta(hours=e.hour, minutes=e.minute)
+                ed = timedelta(hours=n.hour, minutes=n.minute)
+                left = md.code(md.quote(str(st - ed)[:4]))
+                lesson += f'*Залишилось* – {left}'
+                mes = f'{mode} {name}\n\n{lesson}'
+                await answer_text(message, mes, 'timetable')
+                break
+        if not has_now_subject:
+            await answer(message, 'no-pair')
+    else:
+        await answer(message, 'no-pair')
 
 
 async def formation_schedule_for_day(message: types.Message,
