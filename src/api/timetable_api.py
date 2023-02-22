@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date, timedelta
 
 import requests
@@ -67,7 +68,9 @@ async def get_timetable(id: int, mode: str, s_date=date.today(),
     }
     try:
         res = requests.get(api_url, params=payload)
-        text = json.loads(res.text)
+        # Resolving a bad response structure error from the API.
+        text = re.sub(r'select.*?\r\n<br>', '', res.text)
+        text = json.loads(text)
         code = text['psrozklad_export']['code']
         # If the answer is successful, we update the data in the database.
         if code == '0':
