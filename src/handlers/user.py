@@ -2,10 +2,11 @@ import handlers.skd_cmd as skd_cmd
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from database.db import save_user_data, search
+from config import is_date
+from database.db import save_user_data, search, update_user_data_date
 from services.message import answer, reply
 from services.storage import chair, faculty
-from services.timetable import change_week_day, change_week
+from services.timetable import change_week_day, change_week, timetable_for_date
 
 from .commands import cmd_cancel
 
@@ -33,9 +34,9 @@ async def text(message: types.Message):
             await change_week(message, 'prev')
         case 'тиждень ➡️':
             await change_week(message, 'next')
-        case '🔄 Змінити запит':
+        case 'Змінити запит':
             await cmd_cancel(message)
-        case '📆 Ввести дату':
+        case 'Ввести дату':
             await answer(message, 'set-date')
             await FSMSetDate.set_date.set()
 
@@ -143,30 +144,19 @@ class FSMSetDate(StatesGroup):
     set_date = State()
 
 
-async def cancel_date(message: types.Message, state: FSMSetDate):
+async def cmd_cancel_date(message: types.Message, state: FSMSetDate):
     await state.finish()
-    await answer(message, "cancel-date")
+    await answer(message, 'cancel-date')
 
 
 async def set_date(message: types.Message, state: FSMContext):
     new_date = await is_date(message.text)
     if new_date:
         await state.finish()
-        await sched_cmd.get_day_timetable(message, new_date)
+        await update_user_data_date(message.from_user.id, new_date)
+        await timetable_for_date(message, new_date)
     else:
-        await answer(message, "error-date")
-
-
-async def setdate(message: types.Message):
-    id = await user_data(message, "get_data_id", None)
-    try:
-        if id[0] != None:
-            await answer(message, "set-date")
-            await FSMSetDate.set_date.set()
-        else:
-            await answer(message, "no-data")
-    except:
-        await answer(message, "no-data")
+        await answer(message, 'date-error')
 
 
 # -----------------------------------------------------------
@@ -174,11 +164,11 @@ async def setdate(message: types.Message):
 # -----------------------------------------------------------
 
 def register_handlers_user(dp: Dispatcher):
-    dp.register_message_handler(cancel_date, state=FSMSetDate.set_date,
+    dp.register_message_handler(cmd_cancel_date, state=FSMSetDate.set_date,
                                 chat_type=types.ChatType.PRIVATE,
-                                commands="cancel")
-    dp.register_message_handler(setdate, chat_type=types.ChatType.PRIVATE,
-                                commands="setdate")
+                                commands='cancel')
+    dp.register_message_handler(cmd_cancel, commands='cancel', state='*',
+                                chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(text, chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(set_student_faculty, state=FSMStudent.faculty,
                                 chat_type=types.ChatType.PRIVATE)

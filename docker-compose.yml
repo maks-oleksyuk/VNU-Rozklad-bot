@@ -5,41 +5,56 @@ services:
     image: mariadb:$MARIADB_TAG
     container_name: '${PROJECT_NAME}_db'
     stop_grace_period: 30s
+    restart: always
     environment:
+      TZ: 'Europe/Kiev'
       MYSQL_USER: $DB_USER
       MYSQL_PASSWORD: $DB_PASS
       MYSQL_DATABASE: $DB_NAME
       MYSQL_ROOT_USER: $DB_ROOT_USER
       MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
-      TZ: 'Europe/Kiev'
     ports:
       - '1229:3306'
     volumes:
       - ./db-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
-    #  - /path/to/mariadb/data/on/host:/var/lib/mysql # I want to manage volumes manually.
 
   bot:
     build:
       context: ./
       args:
         PYTHON_TAG: $PYTHON_TAG
-    container_name: "${PROJECT_NAME}_bot"
+    container_name: '${PROJECT_NAME}_bot'
+    restart: always
     environment:
       TOKEN: $TOKEN
+      API_IP: $API_IP
       DB_USER: $DB_USER
       DB_PASS: $DB_PASS
       DB_NAME: $DB_NAME
       ADMIN_ID: $ADMIN_ID
     volumes:
       - ./:/usr/src/app:cached
+    depends_on:
+      - db
 
-        #  nginx:
-        #    image: wodby/nginx:$NGINX_TAG
-        #    container_name: "${PROJECT_NAME}_nginx"
-        #    depends_on:
-        #      - python
-        #    environment:
-        #      NGINX_STATIC_OPEN_FILE_CACHE: "off"
+  adminer:
+    container_name: '${PROJECT_NAME}_adminer'
+    image: adminer:$ADMINER_TAG
+    environment:
+      ADMINER_DESIGN: dracula
+      ADMINER_DEFAULT_DB_NAME: $DB_NAME
+      ADMINER_DEFAULT_DB_DRIVER: server
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+      #  nginx:
+      #    image: wodby/nginx:$NGINX_TAG
+      #    container_name: "${PROJECT_NAME}_nginx"
+      #    depends_on:
+      #      - python
+      #    environment:
+      #      NGINX_STATIC_OPEN_FILE_CACHE: "off"
       #      NGINX_ERROR_LOG_LEVEL: debug
       #      NGINX_VHOST_PRESET: django
       #      NGINX_BACKEND_HOST: python
@@ -51,77 +66,3 @@ services:
       #    - backend:/usr/src/app
       #    labels:
       #    - "traefik.http.routers.${PROJECT_NAME}_nginx.rule=Host(`${PROJECT_BASE_URL}`)"
-
-      #  redis:
-      #    container_name: "${PROJECT_NAME}_redis"
-      #    image: wodby/redis:$REDIS_TAG
-
-      #  adminer:
-      #    container_name: "${PROJECT_NAME}_adminer"
-      #    image: wodby/adminer:$ADMINER_TAG
-      #    environment:
-      #      ADMINER_DEFAULT_DB_DRIVER: pgsql
-      ##      # For MariaDB:
-      ##      ADMINER_DEFAULT_DB_DRIVER: server
-      #      ADMINER_DEFAULT_DB_HOST: $DB_HOST
-      #      ADMINER_DEFAULT_DB_NAME: $DB_NAME
-      #    labels:
-      #    - "traefik.http.routers.${PROJECT_NAME}_adminer.rule=Host(`adminer.${PROJECT_BASE_URL}`)"
-
-      #  memcached:
-      #    container_name: "${PROJECT_NAME}_memcached"
-      #    image: wodby/memcached:$MEMCACHED_TAG
-
-      #  rsyslog:
-      #    container_name: "${PROJECT_NAME}_rsyslog"
-      #    image: wodby/rsyslog:$RSYSLOG_TAG
-
-      #  athenapdf:
-      #    image: arachnysdocker/athenapdf-service:$ATHENAPDF_TAG
-      #    container_name: "${PROJECT_NAME}_athenapdf"
-      #    environment:
-      #      WEAVER_AUTH_KEY: weaver-auth-key
-      #      WEAVER_ATHENA_CMD: "athenapdf -S"
-      #      WEAVER_MAX_WORKERS: 10
-      #      WEAVER_MAX_CONVERSION_QUEUE: 50
-      #      WEAVER_WORKER_TIMEOUT: 90
-      #      WEAVER_CONVERSION_FALLBACK: "false"
-
-      #  opensmtpd:
-      #    container_name: "${PROJECT_NAME}_opensmtpd"
-      #    image: wodby/opensmtpd:$OPENSMTPD_TAG
-
-      #  traefik:
-      #    image: traefik:v2.0
-      #    container_name: "${PROJECT_NAME}_traefik"
-      #    command: --api.insecure=true --providers.docker
-      #    ports:
-      # - '8000:80'
-#    - '8080:8080' # Dashboard
-#    volumes:
-#    - /var/run/docker.sock:/var/run/docker.sock
-
-#x-mutagen:
-#  sync:
-#    defaults:
-#      ignore:
-#        vcs: true
-#        paths:
-#        - .DS_Store
-#        - .history
-#        - .idea
-#    backend:
-#      alpha: "."
-#      beta: "volume://backend"
-#      configurationBeta:
-#        permissions:
-#          defaultFileMode: 0644
-#          defaultDirectoryMode: 0755
-#          defaultOwner: "id:501"
-#          defaultGroup: "id:20"
-
-#volumes:
-## Mutagen for macOS users
-#  backend:
-## For Xdebug profiler
-#  files:

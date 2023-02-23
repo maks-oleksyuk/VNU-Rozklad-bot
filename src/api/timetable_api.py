@@ -1,11 +1,12 @@
 import json
-import re
 from datetime import date, timedelta
+from os import getenv
 
 import requests
 from database.db import save_groups, save_teachers, save_timetable
 
-api_url = 'http://94.130.69.82/cgi-bin/timetable_export.cgi'
+api_ip = getenv('API_IP', default='')
+api_url = f'http://{api_ip}/cgi-bin/timetable_export.cgi'
 
 
 async def get_groups():
@@ -68,9 +69,7 @@ async def get_timetable(id: int, mode: str, s_date=date.today(),
     }
     try:
         res = requests.get(api_url, params=payload)
-        # Resolving a bad response structure error from the API.
-        text = re.sub(r'select.*?\r\n<br>', '', res.text)
-        text = json.loads(text)
+        text = json.loads(res.text)
         code = text['psrozklad_export']['code']
         # If the answer is successful, we update the data in the database.
         if code == '0':

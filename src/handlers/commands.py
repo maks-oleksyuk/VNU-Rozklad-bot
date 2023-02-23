@@ -35,5 +35,3 @@ def register_handlers_commands(dp: Dispatcher):
                                 chat_type=types.ChatType.PRIVATE)
     dp.register_message_handler(cmd_help, commands='help',
                                 chat_type=types.ChatType.PRIVATE)
-    dp.register_message_handler(cmd_cancel, commands='cancel',
-                                chat_type=types.ChatType.PRIVATE, state='*')
