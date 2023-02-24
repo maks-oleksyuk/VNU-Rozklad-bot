@@ -40,7 +40,7 @@ async def week(message: types.Message, **kwargs):
     await db.insert_update_user(message)
     if await db.get_users_data_by_id(message.from_user.id):
         await timetable_for_week(message, date.today() +
-                                 timedelta(kwargs.get('next_week', 0)))
+                                 timedelta(weeks=kwargs.get('next_week', 0)))
     else:
         await answer(message, 'no-ud-exist', 'choice')
 
