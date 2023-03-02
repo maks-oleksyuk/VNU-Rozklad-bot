@@ -15,10 +15,10 @@ handlers:
     formatter: console
     stream: ext://sys.stdout
   file:
-    class: logging.FileHandler
+    class: logging.handlers.RotatingFileHandler
     filename: 'logs/bot.log'
-    #    maxBytes: 100000
-    #    backupCount: 5
+    maxBytes: 1048576
+    backupCount: 5
     mode: a
     level: INFO
     formatter: file

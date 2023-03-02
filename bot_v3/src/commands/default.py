@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters import CommandStart
 
-from ..config import dp
+from ..config import dp, db
 from ..utils.messages import answer
 
 
@@ -13,3 +13,4 @@ async def start(message: types.Message):
         message (types.Message): object representing the message sent by the user.
     """
     await answer(message, 'start')
+    await db.insert_update_user(message)
