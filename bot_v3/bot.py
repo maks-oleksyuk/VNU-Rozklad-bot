@@ -1,7 +1,7 @@
 from aiogram import executor
 
 from src.commands.default import *
-from src.config import logger
+from src.config import logger, api
 
 
 async def on_startup(dp):
@@ -10,6 +10,7 @@ async def on_startup(dp):
     Args:
         dp: A dispatcher instance used by the bot.
     """
+    await api.get_groups()
     logger.info('Bot Started Successfully')
 
 

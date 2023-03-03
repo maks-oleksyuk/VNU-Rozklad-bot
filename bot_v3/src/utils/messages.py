@@ -1,11 +1,16 @@
 from aiogram import types
 
+from ..keyboards.reply import get_reply_keyboard_by_key
+
 messages = {
     'start': '👋 *Привіт\\!* Я – твій помічник\n'
              + 'для відображення розкладу занять\\.\n\n'
              + 'Тут ти можеш дізнатись про свої пари протягом тижня\\.\n\n'
              + 'Обери, для кого хочеш отримати інформацію,\n'
-             + 'скориставшись меню знизу 👇'
+             + 'скориставшись меню нижче 👇',
+
+    'faculty': '📁 Оберіть *факультет* зі списку або\n'
+               + 'введіть назву групи для пошуку 🔎',
 }
 
 
@@ -31,5 +36,5 @@ async def answer(message: types.Message, text_key: str, markup_key=None):
     """
     await message.answer(
         text=await get_message_by_key(text_key),
-        # reply_markup=await get_reply_keyboard_by_key(message, markup_key),
+        reply_markup=await get_reply_keyboard_by_key(message, markup_key),
     )

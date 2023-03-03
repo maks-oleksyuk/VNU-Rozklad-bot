@@ -1,6 +1,9 @@
+import logging
+
 from aiogram import types
 from sqlalchemy import create_engine, inspect, MetaData, text, \
     Table, Column, UniqueConstraint
+from sqlalchemy import select
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, TEXT, DATE, TIMESTAMP, insert
 
@@ -36,8 +39,8 @@ class Database:
             db_user (str): username for accessing the database.
             db_pass (str): password for accessing the database.
         """
-        from bot_v3.src.config import logger
-        self.log = logger
+        self.log = logging.getLogger('bot')
+
         # Create database __engine with provided parameters.
         self.__engine = create_engine(
             f'mariadb+mariadbconnector://{db_user}:{db_pass}@{DB_HOST}:{DB_PORT}/{db_name}'
@@ -64,8 +67,7 @@ class Database:
         if not self.__inspector.has_table('users'):
             Table(
                 'users', self.__meta,
-                Column('uid', BIGINT(unsigned=True), unique=True,
-                       primary_key=True,
+                Column('uid', BIGINT(unsigned=True), unique=True, primary_key=True,
                        comment='The Telegram user ID.'),
                 Column('fullname', VARCHAR(255),
                        comment='The name of this user.'),
@@ -81,8 +83,7 @@ class Database:
         if not self.__inspector.has_table('users_data'):
             Table(
                 'users_data', self.__meta,
-                Column('uid', BIGINT(unsigned=True), unique=True,
-                       primary_key=True,
+                Column('uid', BIGINT(unsigned=True), unique=True, primary_key=True,
                        comment='The Telegram user ID.'),
                 Column('d_id', INTEGER, nullable=False,
                        comment='The Data ID.'),
@@ -97,8 +98,7 @@ class Database:
         if not self.__inspector.has_table('groups'):
             Table(
                 'groups', self.__meta,
-                Column('id', SMALLINT(unsigned=True), unique=True,
-                       nullable=False,
+                Column('id', SMALLINT(unsigned=True), unique=True, nullable=False,
                        comment='The group ID.'),
                 Column('department', VARCHAR(128), nullable=False,
                        comment='The group department.'),
@@ -109,8 +109,7 @@ class Database:
         if not self.__inspector.has_table('teachers'):
             Table(
                 'teachers', self.__meta,
-                Column('id', SMALLINT(unsigned=True), unique=True,
-                       nullable=False,
+                Column('id', SMALLINT(unsigned=True), unique=True, nullable=False,
                        comment='The teacher ID.'),
                 Column('department', VARCHAR(128), nullable=False,
                        comment='The teacher department.'),
@@ -137,8 +136,7 @@ class Database:
                        comment='The data name.'),
                 Column('date', DATE, nullable=False,
                        comment='The timetable date.'),
-                Column('lesson_number', SMALLINT(unsigned=True),
-                       nullable=False,
+                Column('lesson_number', SMALLINT(unsigned=True), nullable=False,
                        comment='The lesson number.'),
                 Column('lesson_time', VARCHAR(16), nullable=False,
                        comment='The lesson time.'),
@@ -154,8 +152,7 @@ class Database:
                        comment='The lesson group(s).'),
                 Column('replacement', VARCHAR(255)),
                 Column('reservation', VARCHAR(255)),
-                UniqueConstraint('id', 'mode', 'date',
-                                 'lesson_number', 'teacher', 'group')
+                UniqueConstraint('id', 'mode', 'date', 'lesson_number', 'teacher', 'group')
             )
             self.log.info('The `timetable` table was not found, it has been created')
         self.__meta.create_all(self.__engine)
@@ -180,6 +177,38 @@ class Database:
         ))
         self._conn.commit()
         self.log.debug(f'User {message.from_user.full_name} - created/updated')
+
+    async def save_groups(self, data: dict) -> None:
+        """
+        Saves groups data to the database.
+
+        Args:
+            data (dict): a dictionary containing groups data.
+        """
+
+        # Delete existing data in the `groups` table.
+        self._conn.execute(self._groups.delete())
+
+        query_data = []
+        # Iterate through the data and add each group to the query data list.
+        [(query_data.append({
+            'id': i['ID'],
+            'department': d['name'],
+            'name': i['name'],
+        })) for d in data for i in d['objects'] if i['ID'] != '']
+
+        # Insert the query data into the `groups` table and commit it.
+        self._conn.execute(insert(self._groups).values(query_data))
+        self._conn.commit()
+
+        # Log a message indicating the `groups` table was successfully updated.
+        self.log.info('Table `groups` updated successfully')
+
+    async def get_departments_by_mode(self, mode: str):
+        table = self.__meta.tables[mode]
+        stmt = select(table.c.department).distinct()
+        res = self._conn.execute(stmt).all()
+        return [r for r, in res]
 
     async def db_close(self) -> None:
         """Close the connection with the database"""
