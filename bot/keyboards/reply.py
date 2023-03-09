@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
 
-from ..config import db
+from loader import db
 
 
 # from database.db import get_objects_by_department, get_users_data_by_id, search

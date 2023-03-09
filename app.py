@@ -1,10 +1,9 @@
-from aiogram import executor
+from aiogram import executor, Dispatcher
 
-from src.commands.default import *
-from src.config import logger, api
+from loader import dp, api, logger
 
 
-async def on_startup(dp):
+async def on_startup(dp: Dispatcher):
     """A function that sends a message to the admin when the bot is started.
 
     Args:
@@ -15,6 +14,8 @@ async def on_startup(dp):
 
 
 if __name__ == '__main__':
+    from bot import commands
+
     executor.start_polling(
         dispatcher=dp,
         skip_updates=True,

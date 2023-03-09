@@ -1,7 +1,8 @@
 from aiogram import types
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
-from ..config import dp
+from aiogram.dispatcher.filters.state import State, StatesGroup
+
+from loader import dp
 
 
 class FSMStudent(StatesGroup):

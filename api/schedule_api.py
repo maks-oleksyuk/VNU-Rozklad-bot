@@ -1,17 +1,13 @@
 import json
-import logging
 
 import requests
 
 
-# from ..config import db
-
-
 class ScheduleAPI:
     def __init__(self, api_ip: str):
-        from ..config import db
+        from loader import db, logger
         self._api_url = f'http://{api_ip}/cgi-bin/timetable_export.cgi'
-        self.log = logging.getLogger('bot')
+        self.log = logger
         self._db = db
 
     async def get_groups(self):

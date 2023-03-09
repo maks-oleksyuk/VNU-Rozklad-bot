@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters import CommandStart
 
-from ..config import dp, db
+from loader import dp, db
 from ..states.student import FSMStudent
 from ..utils.messages import answer
 
