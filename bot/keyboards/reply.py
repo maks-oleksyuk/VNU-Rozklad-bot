@@ -5,21 +5,15 @@ from aiogram.types import ReplyKeyboardMarkup
 from loader import db
 
 
-# from database.db import get_objects_by_department, get_users_data_by_id, search
-
-
-# from .storage import chair, faculty
-
-
 async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboardMarkup:
-    """Return the keyboard for the required variant
+    """Return the keyboard for the required variant.
 
     Args:
-        message (types.Message): Message with additional data
-        key (str): Keyboard identifier to build
+        message: Message with additional data.
+        key: Keyboard identifier to build.
 
     Returns:
-        ReplyKeyboardMarkup: Keyboard of the right option
+        ReplyKeyboardMarkup: Keyboard of the right option.
     """
     markup = ReplyKeyboardMarkup(is_persistent=True, resize_keyboard=True)
     match key:
@@ -30,11 +24,12 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             faculty = await db.get_departments_by_mode('groups')
             markup.input_field_placeholder = 'Пошук (наприклад `КНІТ-43`)'
             markup = await one_column_reply_keyboard(markup, faculty, True)
+        case 'group':
+            data = await db.get_objects_by_department('groups', message.text)
+            markup.input_field_placeholder = 'Пошук'
+            markup = await two_column_reply_keyboard(markup, data, True)
         # case 'chair':
         #     markup = await one_column_reply_keyboard(markup, chair, True)
-        # case 'group':
-        #     data = await get_objects_by_department('groups', message.text)
-        #     markup = await two_column_reply_keyboard(markup, data, True)
         # case 'surname':
         #     data = await get_objects_by_department('teachers', message.text)
         #     markup = await one_column_reply_keyboard(markup, data, True)
@@ -54,22 +49,39 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
     return markup
 
 
-async def one_column_reply_keyboard(markup: ReplyKeyboardMarkup, data,
+async def one_column_reply_keyboard(markup: ReplyKeyboardMarkup, data: list,
                                     use_back: bool = False) -> ReplyKeyboardMarkup:
+    """Adds a one-column keyboard layout to the given ReplyKeyboardMarkup object.
+
+    Args:
+        markup: The markup to which the buttons will be added.
+        data: The list of strings to be displayed as buttons.
+        use_back: Whether to add a 'back' button. Defaults to False.
+
+    Returns:
+        ReplyKeyboardMarkup: The markup object with the buttons added.
+    """
     if use_back:
         markup.add(Kb(text='⬅️ Назад'))
-    for i in data:
-        markup.add(Kb(text=i))
+    [markup.add(Kb(text=i)) for i in data]
     return markup
 
-#
-# async def two_column_reply_keyboard(markup: ReplyKeyboardMarkup, data,
-#                                     use_back: bool = False) -> ReplyKeyboardMarkup:
-#     if use_back:
-#         markup.add(Kb(text='⬅️ Назад'))
-#     for i in range(0, len(data), 2):
-#         if i == len(data) - 1:
-#             markup.add(Kb(text=data[i]))
-#         else:
-#             markup.row(Kb(text=data[i]), Kb(text=data[i + 1]))
-#     return markup
+
+async def two_column_reply_keyboard(markup: ReplyKeyboardMarkup, data: list,
+                                    use_back: bool = False) -> ReplyKeyboardMarkup:
+    """Creates a reply keyboard markup with two columns.
+
+    Args:
+        markup: The markup to which the buttons will be added.
+        data: The list of strings to be displayed as buttons.
+        use_back: Whether to add a 'back' button. Defaults to False.
+
+    Returns:
+        ReplyKeyboardMarkup: The markup object with the buttons added.
+    """
+    if use_back:
+        markup.add(Kb(text='⬅️ Назад'))
+    [markup.add(Kb(text=data[i])) if i == len(data) - 1
+     else markup.row(Kb(text=data[i]), Kb(text=data[i + 1]))
+     for i in range(0, len(data), 2)]
+    return markup

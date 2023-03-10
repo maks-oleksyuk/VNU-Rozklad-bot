@@ -204,11 +204,57 @@ class Database:
         # Log a message indicating the `groups` table was successfully updated.
         self.log.info('Table `groups` updated successfully')
 
-    async def get_departments_by_mode(self, mode: str):
+    async def get_departments_by_mode(self, mode: str) -> list:
+        """Gets a list of departments for a specific type ('groups' or 'teacher').
+
+        Args:
+            mode: The table name to retrieve objects in departments.
+
+        Returns:
+            A list of departments in the specified table.
+        """
         table = self.__meta.tables[mode]
         stmt = select(table.c.department).distinct()
         res = self._conn.execute(stmt).all()
         return [r for r, in res]
+
+    async def get_objects_by_department(self, mode: str, department: str) -> list:
+        """Retrieves all objects belong to a certain department from the database.
+
+        Args:
+            mode: The mode of the objects to retrieve.
+            department: The department to filter the objects by.
+
+        Returns:
+            A list of objects that belong to the specified department.
+        """
+        table = self.__meta.tables[mode]
+        name = table.c.name if mode == 'groups' else table.c.fullname
+        stmt = select(name).where(table.c.department == department)
+        res = self._conn.execute(stmt).all()
+        return [r for r, in res]
+
+    async def search(self, mode: str, query: str) -> list:
+        """Searches for matches in the specified table of the database.
+
+        Args:
+            mode: The name of the table to search for objects.
+            query: The text to search for.
+
+        Returns:
+            An array of search results.
+        """
+        table = self.__meta.tables[mode]
+        name = table.c.name if mode == 'groups' else table.c.fullname
+        stmt = select(name).filter(name.like(f'%{query}%'))
+        try:
+            if self._conn.execute(stmt).first()[0] == query:
+                return [query]
+            else:
+                res = self._conn.execute(stmt).all()
+                return [r for r, in res]
+        except TypeError:
+            return []
 
     async def db_close(self) -> None:
         """Close the connection with the database"""

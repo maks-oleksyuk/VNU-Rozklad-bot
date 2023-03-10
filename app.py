@@ -3,7 +3,7 @@ from aiogram import executor, Dispatcher
 from loader import dp, api, logger
 
 
-async def on_startup(dp: Dispatcher):
+async def on_startup(dp: Dispatcher) -> None:
     """A function that sends a message to the admin when the bot is started.
 
     Args:
