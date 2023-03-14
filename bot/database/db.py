@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 
 from aiogram import types
 from sqlalchemy import create_engine, inspect, MetaData, text, \
@@ -178,6 +179,32 @@ class Database:
         self._conn.commit()
         self.log.debug(f'User {message.from_user.full_name} - created/updated')
 
+    async def save_user_data(self, message: types.Message,
+                             d_mode: str, d_date: date = date.today()) -> None:
+        """Saves user data to the database.
+
+        Args:
+            message: Telegram Message object.
+            d_mode: string indicating the data mode (group or teacher).
+            d_date: optional date object representing the date of the data (default is today).
+        """
+        await self.insert_update_user(message)
+        res = await self.get_data_id_and_name(f'{d_mode}s', message.text)
+        stmt = insert(self._users_data).values(
+            uid=message.from_user.id,
+            d_id=res.get('id'),
+            d_mode=d_mode,
+            d_name=res.get('name'),
+            d_date=d_date
+        ).on_duplicate_key_update(
+            d_id=res.get('id'),
+            d_mode=d_mode,
+            d_name=res.get('name'),
+            d_date=d_date
+        )
+        self._conn.execute(stmt)
+        self._conn.commit()
+
     async def save_groups(self, data: dict) -> None:
         """
         Saves groups data to the database.
@@ -230,9 +257,25 @@ class Database:
         """
         table = self.__meta.tables[mode]
         name = table.c.name if mode == 'groups' else table.c.fullname
-        stmt = select(name).where(table.c.department == department)
+        stmt = select(name).where(table.c.department == department).order_by(name)
         res = self._conn.execute(stmt).all()
         return [r for r, in res]
+
+    async def get_data_id_and_name(self, mode: str, query: str) -> dict:
+        """Retrieves data id and name based on the given query string.
+
+        Args:
+            mode: A string representing the table name.
+            query: A string representing the query.
+
+        Returns:
+            dict: A dictionary containing the id and name of the data.
+        """
+        table = self.__meta.tables[mode]
+        name = table.c.name if mode == 'groups' else table.c.fullname
+        stmt = select(table.c.id, table.c.name).where(name == query)
+        res = self._conn.execute(stmt).first()
+        return {'id': int(res[0]), 'name': res[1]}
 
     async def search(self, mode: str, query: str) -> list:
         """Searches for matches in the specified table of the database.
@@ -246,7 +289,7 @@ class Database:
         """
         table = self.__meta.tables[mode]
         name = table.c.name if mode == 'groups' else table.c.fullname
-        stmt = select(name).filter(name.like(f'%{query}%'))
+        stmt = select(name).filter(name.like(f'%{query}%')).order_by(name)
         try:
             if self._conn.execute(stmt).first()[0] == query:
                 return [query]
