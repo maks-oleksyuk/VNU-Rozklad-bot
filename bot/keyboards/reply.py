@@ -9,7 +9,7 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
     """Return the keyboard for the required variant.
 
     Args:
-        message: Message with additional data.
+        message: The message sent by the user.
         key: Keyboard identifier to build.
 
     Returns:
@@ -31,16 +31,19 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
         case 'search-group':
             data = await db.search('groups', message.text)
             markup.input_field_placeholder = 'Пошук'
-            markup = await two_column_reply_keyboard(markup, data, True)
-        # case 'chair':
-        #     markup = await one_column_reply_keyboard(markup, chair, True)
-        # case 'surname':
-        #     data = await get_objects_by_department('teachers', message.text)
-        #     markup = await one_column_reply_keyboard(markup, data, True)
-
-        # case 'search-teacher':
-        #     data = await search('teachers', message.text)
-        #     markup = await one_column_reply_keyboard(markup, data, True)
+            markup = await two_column_reply_keyboard(markup, data[:99], True)
+        case 'chair':
+            chair = await db.get_departments_by_mode('teachers')
+            markup.input_field_placeholder = 'Пошук (наприклад `Катерина`)'
+            markup = await one_column_reply_keyboard(markup, chair, True)
+        case 'surname':
+            data = await db.get_objects_by_department('teachers', message.text)
+            markup.input_field_placeholder = 'Пошук'
+            markup = await one_column_reply_keyboard(markup, data, True)
+        case 'search-teacher':
+            data = await db.search('teachers', message.text)
+            markup.input_field_placeholder = 'Пошук'
+            markup = await one_column_reply_keyboard(markup, data[:99], True)
         # case 'timetable':
         #     days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
         #     res = await get_users_data_by_id(message.from_user.id)

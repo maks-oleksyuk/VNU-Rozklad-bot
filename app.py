@@ -1,6 +1,8 @@
+from datetime import date
+
 from aiogram import executor, Dispatcher
 
-from loader import dp, api, logger
+from loader import dp, db, api, logger
 
 
 async def on_startup(dp: Dispatcher) -> None:
@@ -9,7 +11,11 @@ async def on_startup(dp: Dispatcher) -> None:
     Args:
         dp: A dispatcher instance used by the bot.
     """
-    await api.get_groups()
+    # Update the tables on the 1st day of each month, or if they are missing data.
+    if await db._table_is_empty('groups') or date.today().day == 1:
+        await api.get_groups()
+    if await db._table_is_empty('teachers') or date.today().day == 1:
+        await api.get_teachers()
     logger.info('Bot Started Successfully')
 
 

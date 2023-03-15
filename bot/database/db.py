@@ -4,7 +4,7 @@ from datetime import date
 from aiogram import types
 from sqlalchemy import create_engine, inspect, MetaData, text, \
     Table, Column, UniqueConstraint
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, TEXT, DATE, TIMESTAMP, insert
 
@@ -158,6 +158,19 @@ class Database:
             self.log.info('The `timetable` table was not found, it has been created')
         self.__meta.create_all(self.__engine)
 
+    async def _table_is_empty(self, name: str) -> bool:
+        """Check if a table is empty.
+
+        Args:
+            name: The name of the table to check.
+
+        Returns:
+            bool: True if the table is empty, False otherwise.
+        """
+        table = self.__meta.tables[name]
+        stmt = select(func.count(table.c.id)).group_by(table.c.id)
+        return not self._conn.execute(stmt).scalar()
+
     async def insert_update_user(self, message: types.Message) -> None:
         """
         Inserts or updates a user record in the database.
@@ -206,11 +219,10 @@ class Database:
         self._conn.commit()
 
     async def save_groups(self, data: dict) -> None:
-        """
-        Saves groups data to the database.
+        """Saves groups data to the database.
 
         Args:
-            data (dict): a dictionary containing groups data.
+            data: a dictionary containing groups data.
         """
 
         # Delete existing data in the `groups` table.
@@ -230,6 +242,37 @@ class Database:
 
         # Log a message indicating the `groups` table was successfully updated.
         self.log.info('Table `groups` updated successfully')
+
+    async def save_teachers(self, data: dict) -> None:
+        """Saves teachers data to the database.
+
+        Args:
+            data: a dictionary containing teachers data.
+        """
+
+        # Delete existing data in the `teachers` table.
+        self._conn.execute(self._teachers.delete())
+
+        query_data = []
+        [(query_data.append({
+            'id': i['ID'],
+            'department': d['name'],
+            'name': i['name'],
+            'fullname': '{} {} {}'.format(i['P'], i['I'], i['B']),
+            'P': i['P'],
+            'I': i['I'],
+            'B': i['B'],
+        })) for d in data for i in d['objects'] if
+            i['ID'] != ''
+            and i['name'].find('Вакансія') == -1
+            and i['name'].find('0,75') == -1]
+
+        # Insert the query data into the `teachers` table and commit it.
+        self._conn.execute(insert(self._teachers).values(query_data))
+        self._conn.commit()
+
+        # Log a message indicating the `teachers` table was successfully updated.
+        self.log.info('Table `teachers` updated successfully')
 
     async def get_departments_by_mode(self, mode: str) -> list:
         """Gets a list of departments for a specific type ('groups' or 'teacher').
