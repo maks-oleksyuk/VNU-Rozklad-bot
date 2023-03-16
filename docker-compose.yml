@@ -11,8 +11,6 @@ services:
       MYSQL_USER: $DB_USER
       MYSQL_PASSWORD: $DB_PASS
       MYSQL_DATABASE: $DB_NAME
-      MYSQL_ROOT_USER: $DB_ROOT_USER
-      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
     ports:
       - '1229:3306'
     volumes:
@@ -26,12 +24,12 @@ services:
     container_name: '${PROJECT_NAME}_bot'
     restart: always
     environment:
-      TOKEN: $TOKEN
       API_IP: $API_IP
+      DB_NAME: $DB_NAME
       DB_USER: $DB_USER
       DB_PASS: $DB_PASS
-      DB_NAME: $DB_NAME
       ADMIN_ID: $ADMIN_ID
+      BOT_TOKEN: $BOT_TOKEN
     volumes:
       - ./:/usr/src/app:cached
     depends_on:

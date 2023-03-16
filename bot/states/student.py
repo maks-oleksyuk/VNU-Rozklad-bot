@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from loader import dp, db
+from ..commands.schedule import today
 from ..utils.messages import answer, reply
 
 
@@ -72,7 +73,7 @@ async def process_search(message: types.Message, state: FSMContext) -> None:
         if len(groups) == 1:
             await state.finish()
             await db.save_user_data(message, 'group')
-            # await skd_cmd.today(message)
+            await today(message)
         # If multiple results, sends a message with a list of the results.
         elif len(groups) > 1:
             await reply(message, 'good-search', 'search-group')

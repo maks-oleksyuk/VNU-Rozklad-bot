@@ -1,10 +1,10 @@
 import logging
-from datetime import date
+from datetime import date, datetime
 
 from aiogram import types
 from sqlalchemy import create_engine, inspect, MetaData, text, \
     Table, Column, UniqueConstraint
-from sqlalchemy import select, func
+from sqlalchemy import select, update, delete, func
 from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
     VARCHAR, TEXT, DATE, TIMESTAMP, insert
 
@@ -14,8 +14,7 @@ DB_HOST = 'localhost'
 
 
 class Database:
-    """
-    A class for managing a database.
+    """A class for managing a database.
 
     # TODO Update docblock when finish bot.v3
     Attributes:
@@ -32,13 +31,12 @@ class Database:
     """
 
     def __init__(self, db_name: str, db_user: str, db_pass: str):
-        """
-        Initializes a Database object.
+        """Initializes a Database object.
 
         Args:
-            db_name (str): name of the database.
-            db_user (str): username for accessing the database.
-            db_pass (str): password for accessing the database.
+            db_name: Name of the database.
+            db_user: Username for accessing the database.
+            db_pass: Password for accessing the database.
         """
         self.log = logging.getLogger('bot')
 
@@ -172,12 +170,10 @@ class Database:
         return not self._conn.execute(stmt).scalar()
 
     async def insert_update_user(self, message: types.Message) -> None:
-        """
-        Inserts or updates a user record in the database.
+        """Inserts or updates a user record in the database.
 
         Args:
-            message (types.Message): A message object from the Telegram API
-                                    containing user information.
+            message: The message sent by the user.
         """
         self._conn.execute(insert(self._users).values(
             uid=message.from_user.id,
@@ -197,11 +193,10 @@ class Database:
         """Saves user data to the database.
 
         Args:
-            message: Telegram Message object.
-            d_mode: string indicating the data mode (group or teacher).
-            d_date: optional date object representing the date of the data (default is today).
+            message: The message sent by the user.
+            d_mode: String indicating the data mode (group or teacher).
+            d_date: Optional date object representing the date of the data (default is today).
         """
-        await self.insert_update_user(message)
         res = await self.get_data_id_and_name(f'{d_mode}s', message.text)
         stmt = insert(self._users_data).values(
             uid=message.from_user.id,
@@ -215,6 +210,32 @@ class Database:
             d_name=res.get('name'),
             d_date=d_date
         )
+        self._conn.execute(stmt)
+        self._conn.commit()
+
+    async def get_users_data_by_id(self, uid: int) -> dict | None:
+        """Get user data by user id.
+
+        Args:
+            uid: User id, received from the message.
+
+        Returns:
+            A dictionary of user data, or None if the user is not found.
+        """
+        stmt = select(self._users_data).where(self._users_data.c.uid == uid)
+        res = self._conn.execute(stmt).first()
+        return res._asdict() if res else None
+
+    async def update_user_data_date(self, id: int, date: date) -> None:
+        """Updates a user's data with a new date.
+
+        Args:
+            id: The ID of the user whose data is being updated.
+            date: The new date to update the user's data with.
+        """
+        stmt = (update(self._users_data)
+                .values(d_date=date)
+                .where(self._users_data.c.uid == id))
         self._conn.execute(stmt)
         self._conn.commit()
 
@@ -341,6 +362,65 @@ class Database:
                 return [r for r, in res]
         except TypeError:
             return []
+
+    async def get_teacher_full_name(self, name: str):
+        stmt = select(self._teachers.c.fullname).where(func.instr(name, self._teachers.c.name))
+        res = self._conn.execute(stmt).first()
+        return res._asdict() if res else None
+
+    async def save_timetable(self, id: int, mode: str, data: dict, s_date: date, e_date: date) -> None:
+        # Currently, there is no functionality to track deleted rows
+        # from the API query result, so all are overwritten.
+        self._conn.execute(delete(self._timetable)
+                           .where(self._timetable.c.id == id)
+                           .where(self._timetable.c.mode == mode)
+                           .where(self._timetable.c.date >= s_date)
+                           .where(self._timetable.c.date <= e_date))
+        for i in data:
+            # We look for matches in groups so as not to store unnecessary data.
+            # For example: general (Group, name, ...) to general.
+            g = i['group'].find('І (')
+            stmt = insert(self._timetable).values(
+                id=id,
+                mode=mode,
+                name=i['object'],
+                date=datetime.strptime(i['date'], '%d.%m.%Y').date(),
+                lesson_number=i['lesson_number'],
+                lesson_time=i['lesson_time'],
+                room=i['room'],
+                type=i['type'],
+                title=i['title'].replace(' (за професійним спрямуванням)', ''),
+                teacher=i['teacher'],
+                group=i['group'] if g == -1 else i['group'][:g + 1],
+                replacement=i['replacement'],
+                reservation=i['reservation'],
+            )
+            self._conn.execute(stmt)
+        self._conn.commit()
+
+    async def get_timetable(self, id: int, mode: str,
+                            s_date: date = date.today(),
+                            e_date: date = date.today()) -> list:
+        """Get the timetable data from the database.
+
+        Args:
+            id: ID of the schedule.
+            mode: Schedule mode (teacher or group).
+            s_date: Start date of the schedule. Defaults to today.
+            e_date: End date of the schedule. Defaults to today.
+
+        Returns:
+            list: List of timetable data matching the query.
+        """
+        from loader import api
+        await api.get_schedule(id, mode, s_date)
+        stmt = (select(self._timetable.c)
+                .where(self._timetable.c.id == id)
+                .where(self._timetable.c.mode == mode)
+                .where(self._timetable.c.date >= s_date)
+                .where(self._timetable.c.date <= e_date))
+        res = self._conn.execute(stmt).all()
+        return [r._asdict() for r in res]
 
     async def db_close(self) -> None:
         """Close the connection with the database"""

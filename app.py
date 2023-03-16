@@ -19,12 +19,17 @@ async def on_startup(dp: Dispatcher) -> None:
     logger.info('Bot Started Successfully')
 
 
+async def on_shutdown(dp: Dispatcher):
+    await db.db_close()
+    logger.info('Bot Stopped')
+
+
 if __name__ == '__main__':
-    from bot import commands
+    from bot import commands, handlers
 
     executor.start_polling(
         dispatcher=dp,
         skip_updates=True,
         on_startup=on_startup,
-        # on_shutdown=on_shutdown
+        on_shutdown=on_shutdown
     )

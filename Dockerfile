@@ -17,8 +17,8 @@ RUN pip install --upgrade pip
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
 
-COPY src/ /src/
+COPY . .
 
-WORKDIR /src
+WORKDIR .
 
 CMD python -m app

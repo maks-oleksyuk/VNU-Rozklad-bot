@@ -4,6 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from loader import dp, db
 from ..utils.messages import answer, reply
+from ..commands.schedule import today
 
 
 class FSMTeacher(StatesGroup):
@@ -74,7 +75,7 @@ async def process_search(message: types.Message, state: FSMContext) -> None:
             # Replace the message text with a short form of the teacher's name to save.
             message.text = teachers[0]
             await db.save_user_data(message, 'teacher')
-            # await skd_cmd.today(message)
+            await today(message)
         # If multiple results, sends a message with a list of the results.
         elif len(teachers) > 1:
             await reply(message, 'good-search', 'search-teacher')

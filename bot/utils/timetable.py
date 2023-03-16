@@ -1,12 +1,11 @@
 import locale
 from datetime import date, time, datetime, timedelta
 
-import database.db as db
 from aiogram import types
 from aiogram.utils.markdown import markdown_decoration as md
 
-from .message import answer, answer_text
-from .storage import week
+from loader import db
+from .messages import answer, answer_text
 
 locale.setlocale(locale.LC_ALL, 'uk_UA.UTF-8')
 
@@ -31,8 +30,33 @@ async def timetable_for_week(message: types.Message, date: date):
     await formation_schedule_for_week(message, data, ud, sdate, edate)
 
 
-async def formation_schedule_for_now_subject(message: types.Message,
-                                             data: list, ud: dict):
+async def change_week_day(message: types.Message):
+    ud = await db.get_users_data_by_id(message.from_user.id)
+    if ud:
+        if message.text == '🟢':
+            await timetable_for_date(message, ud['d_date'])
+        else:
+            week = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
+            x = week.index(message.text)
+            y = ud['d_date'].weekday()
+            date = ud['d_date'] + timedelta(days=x - y)
+            await db.update_user_data_date(message.from_user.id, date)
+            await timetable_for_date(message, date)
+    else:
+        await answer(message, 'no-ud-exist', 'choice')
+
+
+async def change_week(message: types.Message, side: str):
+    ud = await db.get_users_data_by_id(message.from_user.id)
+    if ud:
+        date = ud['d_date'] + timedelta(weeks=1 if side == 'next' else -1)
+        await db.update_user_data_date(message.from_user.id, date)
+        await timetable_for_date(message, date)
+    else:
+        await answer(message, 'no-ud-exist', 'choice')
+
+
+async def formation_schedule_for_now_subject(message: types.Message, data: list, ud: dict):
     if data:
         mode, lesson = '', ''
         if ud['d_mode'] == 'group':
@@ -75,8 +99,7 @@ async def formation_schedule_for_now_subject(message: types.Message,
         await answer(message, 'no-pair')
 
 
-async def formation_schedule_for_day(message: types.Message,
-                                     data: list, ud: dict):
+async def formation_schedule_for_day(message: types.Message, data: list, ud: dict):
     # If we get any results, we create a message to send.
     if data:
         mode, lessons = '', ''
@@ -113,13 +136,12 @@ async def formation_schedule_for_day(message: types.Message,
     # we will send a corresponding message about it.
     elif ud['d_date'].isoweekday() > 5:
         await answer(message, 'holiday', 'timetable')
-    # We send a message about missing data.
     else:
+        # Send a message about missing data.
         await answer(message, 'no-data', 'timetable')
 
 
-async def formation_schedule_for_week(message: types.Message, data: list,
-                                      ud: dict, sdate: date, edate: date):
+async def formation_schedule_for_week(message: types.Message, data: list, ud: dict, sdate: date, edate: date):
     # If we get any results, we create a message to send.
     if data:
         mode, lessons, day, lsn = '', '', '', 0
@@ -156,36 +178,11 @@ async def formation_schedule_for_week(message: types.Message, data: list,
         await answer(message, 'no-data', 'timetable')
 
 
-async def change_week_day(message: types.Message):
-    ud = await db.get_users_data_by_id(message.from_user.id)
-    if ud:
-        if message.text == '🟢':
-            await timetable_for_date(message, ud['d_date'])
-        else:
-            x = week.index(message.text)
-            y = ud['d_date'].weekday()
-            date = ud['d_date'] + timedelta(days=x - y)
-            await db.update_user_data_date(message.from_user.id, date)
-            await timetable_for_date(message, date)
-    else:
-        await answer(message, 'no-ud-exist', 'choice')
-
-
-async def change_week(message: types.Message, side: str):
-    ud = await db.get_users_data_by_id(message.from_user.id)
-    if ud:
-        date = ud['d_date'] + timedelta(weeks=1 if side == 'next' else -1)
-        await db.update_user_data_date(message.from_user.id, date)
-        await timetable_for_date(message, date)
-    else:
-        await answer(message, 'no-ud-exist', 'choice')
-
-
 async def has_need_group(txt):
     """Checking for specified elements in the text
 
     Args:
-        txt str: Text to check
+        txt: Text to check
 
     Returns:
         bool: True if found and False if not

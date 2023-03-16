@@ -1,8 +1,9 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import CommandStart
+from aiogram.dispatcher.filters import CommandStart, CommandHelp
 
 from loader import dp, db
+from ..states.set_date import FSMSetDate
 from ..utils.messages import answer
 
 
@@ -17,6 +18,34 @@ async def cmd_start(message: types.Message) -> None:
     await db.insert_update_user(message)
 
 
+@dp.message_handler(CommandHelp())
+async def cmd_help(message: types.Message):
+    """Handler function for the `/help` command.
+
+    Args:
+        message: The message sent by the user.
+    """
+    await answer(message, 'help')
+    await db.insert_update_user(message)
+
+
+@dp.message_handler(commands=['about'])
+async def cmd_about(message: types.Message):
+    """Handler function for the `/about` command.
+
+    Args:
+        message: The message sent by the user.
+    """
+    await answer(message, 'about')
+    await db.insert_update_user(message)
+
+
+@dp.message_handler(commands=['cancel'], state=FSMSetDate.set_date)
+async def cmd_cancel_date(message: types.Message, state: FSMSetDate):
+    await state.finish()
+    await answer(message, 'cancel-date')
+
+
 @dp.message_handler(commands=['cancel'], state='*')
 async def cmd_cancel(message: types.Message, state: FSMContext = None) -> None:
     """Handler function for the `/cancel` command, allow cancel any action.
@@ -29,25 +58,3 @@ async def cmd_cancel(message: types.Message, state: FSMContext = None) -> None:
         await state.finish()
     await db.insert_update_user(message)
     await answer(message, 'choice', 'choice')
-
-
-@dp.message_handler(content_types=types.ContentTypes.TEXT)
-async def text(message: types.Message) -> None:
-    """Handler function for processing text messages.
-
-    Args:
-        message: The message sent by the user.
-    """
-    match message.text:
-        case 'Студент 🎓':
-            # Importing a class here and not at the beginning,
-            # for the correct order of handlers in the Dispatcher.
-            from ..states.student import FSMStudent
-            await FSMStudent.first()
-            await answer(message, 'faculty', 'faculty')
-        case 'Викладач 💼':
-            # Importing a class here and not at the beginning,
-            # for the correct order of handlers in the Dispatcher.
-            from ..states.teacher import FSMTeacher
-            await FSMTeacher.first()
-            await answer(message, 'chair', 'chair')

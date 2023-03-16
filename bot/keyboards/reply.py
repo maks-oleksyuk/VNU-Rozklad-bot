@@ -44,13 +44,13 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             data = await db.search('teachers', message.text)
             markup.input_field_placeholder = 'Пошук'
             markup = await one_column_reply_keyboard(markup, data[:99], True)
-        # case 'timetable':
-        #     days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
-        #     res = await get_users_data_by_id(message.from_user.id)
-        #     days[res['d_date'].weekday()] = '🟢'
-        #     markup.row(*days)
-        #     markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
-        #     markup.row('Змінити запит', 'на тиждень', 'Ввести дату')
+        case 'timetable':
+            days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'нд']
+            res = await db.get_users_data_by_id(message.from_user.id)
+            days[res['d_date'].weekday()] = '🟢'
+            markup.row(*days)
+            markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
+            markup.row('Змінити запит', 'на тиждень', 'Ввести дату')
     return markup
 
 
