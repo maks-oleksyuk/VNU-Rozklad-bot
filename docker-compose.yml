@@ -14,7 +14,7 @@ services:
     ports:
       - '1229:3306'
     volumes:
-      - ./db-init:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
+      - ./db:/docker-entrypoint-initdb.d # Place init .sql file(s) here.
 
   bot:
     build:
@@ -28,6 +28,7 @@ services:
       DB_NAME: $DB_NAME
       DB_USER: $DB_USER
       DB_PASS: $DB_PASS
+      DB_HOST: $DB_HOST
       ADMIN_ID: $ADMIN_ID
       BOT_TOKEN: $BOT_TOKEN
     volumes:

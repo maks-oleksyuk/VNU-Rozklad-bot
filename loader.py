@@ -4,9 +4,9 @@ import yaml
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from api.schedule_api import ScheduleAPI
-from bot.database.db import Database
-from data.config import BOT_TOKEN, DB_NAME, DB_USER, DB_PASS, API_IP
+from api import ScheduleAPI
+from data.config import BOT_TOKEN, DB_NAME, DB_USER, DB_PASS, DB_HOST, API_IP
+from db import Database
 
 # Loading the logger configuration from a file.
 with open('logs/log_conf.yml', 'r') as f:
@@ -22,6 +22,6 @@ storage = MemoryStorage()
 
 dp = Dispatcher(bot, storage=storage)
 
-db = Database(DB_NAME, DB_USER, DB_PASS)
+db = Database(DB_NAME, DB_USER, DB_PASS, DB_HOST)
 
 api = ScheduleAPI(API_IP)

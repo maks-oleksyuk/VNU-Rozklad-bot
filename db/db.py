@@ -2,15 +2,13 @@ import logging
 from datetime import date, datetime
 
 from aiogram import types
-from sqlalchemy import create_engine, inspect, MetaData, text, \
-    Table, Column, UniqueConstraint
-from sqlalchemy import select, update, delete, func
-from sqlalchemy.dialects.mysql import BOOLEAN, SMALLINT, INTEGER, BIGINT, \
-    VARCHAR, TEXT, DATE, TIMESTAMP, insert
-
-# Define global variables.
-DB_PORT = 3306
-DB_HOST = 'localhost'
+from sqlalchemy import (
+    create_engine, inspect, MetaData, Table, Column, UniqueConstraint,
+    select, update, delete, text, func
+)
+from sqlalchemy.dialects.mysql import (
+    BOOLEAN, SMALLINT, INTEGER, BIGINT, VARCHAR, TEXT, DATE, TIMESTAMP, insert
+)
 
 
 class Database:
@@ -30,7 +28,8 @@ class Database:
         insert_update_user: inserts or updates a user record in the database.
     """
 
-    def __init__(self, db_name: str, db_user: str, db_pass: str):
+    def __init__(self, db_name: str, db_user: str, db_pass: str,
+                 db_host: str = 'localhost', db_port: int = 3306):
         """Initializes a Database object.
 
         Args:
@@ -42,7 +41,7 @@ class Database:
 
         # Create database __engine with provided parameters.
         self.__engine = create_engine(
-            f'mariadb+mariadbconnector://{db_user}:{db_pass}@{DB_HOST}:{DB_PORT}/{db_name}'
+            f'mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
         )
 
         # Initialize metadata and inspector objects.
@@ -422,7 +421,7 @@ class Database:
         res = self._conn.execute(stmt).all()
         return [r._asdict() for r in res]
 
-    async def db_close(self) -> None:
+    async def _close(self) -> None:
         """Close the connection with the database"""
         self._conn.close()
         self.__engine.dispose()

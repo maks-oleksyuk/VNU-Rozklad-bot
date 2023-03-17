@@ -1,3 +1,3 @@
-from .text import dp
+from .text import text
 
-__all__ = ['dp']
+__all__ = ['text']

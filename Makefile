@@ -15,10 +15,6 @@ up:
 	docker-compose build
 	docker-compose up -d --remove-orphans
 
-.PHONY: mutagen
-mutagen:
-	mutagen-compose up
-
 ## build	:	Build python image.
 build:
 	@echo "Building python image for for $(PROJECT_NAME)..."
@@ -55,7 +51,7 @@ shell:
 	docker exec -ti -e COLUMNS=$(shell tput cols) -e LINES=$(shell tput lines) $(shell docker ps --filter name='$(PROJECT_NAME)_$(or $(filter-out $@,$(MAKECMDGOALS)), 'python')' --format "{{ .ID }}") sh
 
 ## logs	:	View containers logs.
-##		You can optinaly pass an argument with the service name to limit logs
+##		You can optionally pass an argument with the service name to limit logs
 ##		logs python	: View `python` container logs.
 ##		logs nginx python	: View `nginx` and `python` containers logs.
 logs:

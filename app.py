@@ -2,7 +2,8 @@ from datetime import date
 
 from aiogram import executor, Dispatcher
 
-from loader import dp, db, api, logger
+from data.config import ADMIN_ID
+from loader import dp, db, bot, api, logger
 
 
 async def on_startup(dp: Dispatcher) -> None:
@@ -16,11 +17,12 @@ async def on_startup(dp: Dispatcher) -> None:
         await api.get_groups()
     if await db._table_is_empty('teachers') or date.today().day == 1:
         await api.get_teachers()
+    await bot.send_message(chat_id=ADMIN_ID, text='Bot started')
     logger.info('Bot Started Successfully')
 
 
-async def on_shutdown(dp: Dispatcher):
-    await db.db_close()
+async def on_shutdown(dp: Dispatcher) -> None:
+    await db._close()
     logger.info('Bot Stopped')
 
 

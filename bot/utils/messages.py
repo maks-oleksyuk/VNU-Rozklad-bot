@@ -67,7 +67,7 @@ messages = {
 }
 
 
-async def answer(message: types.Message, text_key: str, markup_key: str = None):
+async def answer(message: types.Message, text_key: str, markup_key: str = None) -> types.Message:
     """Send a message to the user using the answer aiogram method.
 
     Args:
@@ -75,20 +75,20 @@ async def answer(message: types.Message, text_key: str, markup_key: str = None):
         text_key: The key for the desired message text.
         markup_key: The key for the desired reply keyboard.
     """
-    await message.answer(
+    return await message.answer(
         text=messages.get(text_key, '⏳'),
         reply_markup=await get_reply_keyboard_by_key(message, markup_key),
     )
 
 
-async def answer_text(message: types.Message, text: str, markup_key: str = None):
-    await message.answer(
+async def answer_text(message: types.Message, text: str, markup_key: str = None) -> types.Message:
+    return await message.answer(
         text=text,
         reply_markup=await get_reply_keyboard_by_key(message, markup_key),
     )
 
 
-async def reply(message: types.Message, text_key: str, markup_key: str = None):
+async def reply(message: types.Message, text_key: str, markup_key: str = None) -> types.Message:
     """Send a message to the user using the reply aiogram method.
 
     Args:
@@ -96,7 +96,7 @@ async def reply(message: types.Message, text_key: str, markup_key: str = None):
         text_key: The key for the desired message text.
         markup_key: The key for the desired reply keyboard.
     """
-    await message.reply(
+    return await message.reply(
         text=messages.get(text_key, '⏳'),
         reply_markup=await get_reply_keyboard_by_key(message, markup_key),
     )

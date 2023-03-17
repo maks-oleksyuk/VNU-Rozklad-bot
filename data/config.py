@@ -10,6 +10,7 @@ ADMIN_ID = int(getenv('ADMIN_ID', default=''))
 DB_USER = getenv('DB_USER', default='')
 DB_PASS = getenv('DB_PASS', default='')
 DB_NAME = getenv('DB_NAME', default='')
+DB_HOST = getenv('DB_HOST', default='')
 
 # Api ip address.
 API_IP = getenv('API_IP', default='')
