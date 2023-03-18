@@ -56,6 +56,35 @@ class ScheduleAPI:
         except Exception as e:
             self.log.error(f'API Error: {e}; Table teachers not updated!')
 
+    async def get_audiences(self) -> dict | None:
+        """Sends a GET request to the API and returns a dictionary with audiences or None.
+
+        Returns:
+            A dictionary with audiences or None if the request was unsuccessful.
+        Raises:
+            Exception: If the request return a bad response code.
+        """
+        payload = {
+            'req_type': 'obj_list',
+            'req_mode': 'room',
+            'show_ID': 'yes',
+            'req_format': 'json',
+            'coding_mode': 'UTF8',
+        }
+        try:
+            res = requests.get(self._api_url, params=payload)
+            text = json.loads(res.text)
+            code = text['psrozklad_export']['code']
+            if code == '0':
+                return text['psrozklad_export']['blocks']
+            else:
+                error = text['psrozklad_export']['error']['error_message']
+                raise Exception(
+                    f'Request return bad response code - {code}: {error}')
+        except Exception as e:
+            self.log.error(f'API Error: {e}; Table teachers not updated!')
+            return None
+
     async def get_schedule(self, id: int, mode: str, s_date=date.today(),
                            e_date=date.today() + timedelta(weeks=2)) -> None:
         """Get schedule data from API for specified ID and mode, then saves it to database.

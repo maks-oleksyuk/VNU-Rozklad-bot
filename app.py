@@ -17,7 +17,11 @@ async def on_startup(dp: Dispatcher) -> None:
         await api.get_groups()
     if await db._table_is_empty('teachers') or date.today().day == 1:
         await api.get_teachers()
-    await bot.send_message(chat_id=ADMIN_ID, text='Bot started')
+    if await db._table_is_empty('audiences') or date.today().day == 1:
+        rooms = await api.get_audiences()
+        if rooms:
+            await db.save_audiences(rooms)
+    await bot.send_message(chat_id=ADMIN_ID, text='Bot started', disable_notification=True)
     logger.info('Bot Started Successfully')
 
 

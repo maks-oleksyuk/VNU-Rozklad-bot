@@ -36,10 +36,12 @@ class Database:
             db_name: Name of the database.
             db_user: Username for accessing the database.
             db_pass: Password for accessing the database.
+            db_host: Host name or IP address of the database server.
+            db_port: Port number of the database server.
         """
         self.log = logging.getLogger('bot')
 
-        # Create database __engine with provided parameters.
+        # Create database engine with provided parameters.
         self.__engine = create_engine(
             f'mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
         )
@@ -59,6 +61,7 @@ class Database:
         self._groups = self.__meta.tables['groups']
         self._teachers = self.__meta.tables['teachers']
         self._timetable = self.__meta.tables['timetable']
+        self._audiences = self.__meta.tables['audiences']
 
     def _create_tables(self) -> None:
         """Creates tables in a database if they do not already exist."""
@@ -153,6 +156,16 @@ class Database:
                 UniqueConstraint('id', 'mode', 'date', 'lesson_number', 'teacher', 'group')
             )
             self.log.info('The `timetable` table was not found, it has been created')
+        if not self.__inspector.has_table('audiences'):
+            Table(
+                'audiences', self.__meta,
+                Column('id', SMALLINT(unsigned=True), nullable=False),
+                Column('block', VARCHAR(128), nullable=False),
+                Column('room', VARCHAR(32), nullable=False),
+                Column('type', VARCHAR(8)),
+                Column('over', SMALLINT(unsigned=True)),
+            )
+            self.log.info('The `audiences` table was not found, it has been created')
         self.__meta.create_all(self.__engine)
 
     async def _table_is_empty(self, name: str) -> bool:
@@ -293,6 +306,31 @@ class Database:
 
         # Log a message indicating the `teachers` table was successfully updated.
         self.log.info('Table `teachers` updated successfully')
+
+    async def save_audiences(self, data: dict) -> None:
+        """Saves audiences data to the database.
+
+        Args:
+            data: a dictionary containing audiences data.
+        """
+
+        # Delete existing data in the `audiences` table.
+        self._conn.execute(self._audiences.delete())
+
+        query_data = []
+        # Iterate through the data and add each group to the query data list.
+        [(query_data.append({
+            'id': i['ID'],
+            'block': d['name'],
+            'room': i['name'],
+        })) for d in data for i in d['objects']]
+
+        # Insert the query data into the `audiences` table and commit it.
+        self._conn.execute(insert(self._audiences).values(query_data))
+        self._conn.commit()
+
+        # Log a message indicating the `audiences` table was successfully updated.
+        self.log.info('Table `audiences` updated successfully')
 
     async def get_departments_by_mode(self, mode: str) -> list:
         """Gets a list of departments for a specific type ('groups' or 'teacher').
