@@ -1,7 +1,7 @@
 import json
 from datetime import date, timedelta
 
-import requests
+import aiohttp
 
 
 class ScheduleAPI:
@@ -21,15 +21,16 @@ class ScheduleAPI:
             'coding_mode': 'UTF8',
         }
         try:
-            res = requests.get(self._api_url, params=payload)
-            text = json.loads(res.text)
-            code = text['psrozklad_export']['code']
-            if code == '0':
-                await self._db.save_groups(
-                    text['psrozklad_export']['departments'])
-            else:
-                error = text['psrozklad_export']['error']['error_message']
-                raise Exception(f'Request return bad response code - {code}: {error}')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self._api_url, params=payload) as res:
+                    text = json.loads(await res.text())
+                    code = text['psrozklad_export']['code']
+                    if code == '0':
+                        await self._db.save_groups(
+                            text['psrozklad_export']['departments'])
+                    else:
+                        error = text['psrozklad_export']['error']['error_message']
+                        raise Exception(f'Request return bad response code - {code}: {error}')
         except Exception as e:
             self.log.error(f'API Error: {e}; Table groups not updated!')
 
@@ -43,16 +44,16 @@ class ScheduleAPI:
             'coding_mode': 'UTF8',
         }
         try:
-            res = requests.get(self._api_url, params=payload)
-            text = json.loads(res.text)
-            code = text['psrozklad_export']['code']
-            if code == '0':
-                await self._db.save_teachers(
-                    text['psrozklad_export']['departments'])
-            else:
-                error = text['psrozklad_export']['error']['error_message']
-                raise Exception(
-                    f'Request return bad response code - {code}: {error}')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self._api_url, params=payload) as res:
+                    text = json.loads(await res.text())
+                    code = text['psrozklad_export']['code']
+                    if code == '0':
+                        await self._db.save_teachers(
+                            text['psrozklad_export']['departments'])
+                    else:
+                        error = text['psrozklad_export']['error']['error_message']
+                        raise Exception(f'Request return bad response code - {code}: {error}')
         except Exception as e:
             self.log.error(f'API Error: {e}; Table teachers not updated!')
 
@@ -72,17 +73,45 @@ class ScheduleAPI:
             'coding_mode': 'UTF8',
         }
         try:
-            res = requests.get(self._api_url, params=payload)
-            text = json.loads(res.text)
-            code = text['psrozklad_export']['code']
-            if code == '0':
-                return text['psrozklad_export']['blocks']
-            else:
-                error = text['psrozklad_export']['error']['error_message']
-                raise Exception(
-                    f'Request return bad response code - {code}: {error}')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self._api_url, params=payload) as res:
+                    text = json.loads(await res.text())
+                    code = text['psrozklad_export']['code']
+                    if code == '0':
+                        return text['psrozklad_export']['blocks']
+                    else:
+                        error = text['psrozklad_export']['error']['error_message']
+                        raise Exception(f'Request return bad response code - {code}: {error}')
         except Exception as e:
-            self.log.error(f'API Error: {e}; Table teachers not updated!')
+            self.log.error(f'API Error: {e}')
+            return None
+
+    async def get_free_rooms(self,
+                             date: date = date.today(),
+                             lesson: int = -1,
+                             block: str = '',
+                             type: str = '') -> dict | None:
+        payload = {
+            'req_type': 'free_rooms_list',
+            'rooms_date': date.strftime('%d.%m.%Y'),
+            'lesson': lesson,
+            'block_name': block,
+            'room_type': type,
+            'req_format': 'json',
+            'coding_mode': 'UTF8',
+        }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self._api_url, params=payload) as res:
+                    text = json.loads(await res.text())
+                    code = text['psrozklad_export']['code']
+                    if code == '0':
+                        return text['psrozklad_export']['free_rooms'][0]['rooms']
+                    else:
+                        error = text['psrozklad_export']['error']['error_message']
+                        raise Exception(f'Request return bad response code - {code}: {error}')
+        except Exception as e:
+            self.log.error(f'API Error: {e}')
             return None
 
     async def get_schedule(self, id: int, mode: str, s_date=date.today(),
@@ -109,16 +138,16 @@ class ScheduleAPI:
             'coding_mode': 'UTF8',
         }
         try:
-            res = requests.get(self._api_url, params=payload)
-            text = json.loads(res.text)
-            code = text['psrozklad_export']['code']
-            # If the answer is successful, we update the data in the database.
-            if code == '0':
-                data = text['psrozklad_export']['roz_items']
-                await self._db.save_timetable(id, mode, data, s_date, e_date)
-            else:
-                error = text['psrozklad_export']['error']['error_message']
-                raise Exception(
-                    f'Request return bad response code - {code}\n{error}')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self._api_url, params=payload) as res:
+                    text = json.loads(await res.text())
+                    code = text['psrozklad_export']['code']
+                    # If the answer is successful, we update the data in the database.
+                    if code == '0':
+                        data = text['psrozklad_export']['roz_items']
+                        await self._db.save_timetable(id, mode, data, s_date, e_date)
+                    else:
+                        error = text['psrozklad_export']['error']['error_message']
+                        raise Exception(f'Request return bad response code - {code}\n{error}')
         except Exception as e:
             self.log.error(f'API Error: {e}')

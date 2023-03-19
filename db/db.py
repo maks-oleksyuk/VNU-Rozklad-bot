@@ -164,6 +164,7 @@ class Database:
                 Column('room', VARCHAR(32), nullable=False),
                 Column('type', VARCHAR(8)),
                 Column('over', SMALLINT(unsigned=True)),
+                Column('places', SMALLINT(unsigned=True)),
             )
             self.log.info('The `audiences` table was not found, it has been created')
         self.__meta.create_all(self.__engine)
@@ -332,6 +333,19 @@ class Database:
         # Log a message indicating the `audiences` table was successfully updated.
         self.log.info('Table `audiences` updated successfully')
 
+    async def update_additions_to_audiences(self, data: dict) -> None:
+        """Update additional data of audiences in the database.
+
+        Args:
+            data: A dictionary of data containing the additional data to update.
+        """
+        for i in data:
+            stmt = (update(self._audiences)
+                    .where(self._audiences.c.room == i['name'])
+                    .values(type=i['type'], over=i['over'], places=i['places']))
+            self._conn.execute(stmt)
+        self._conn.commit()
+
     async def get_departments_by_mode(self, mode: str) -> list:
         """Gets a list of departments for a specific type ('groups' or 'teacher').
 
@@ -405,7 +419,8 @@ class Database:
         res = self._conn.execute(stmt).first()
         return res._asdict() if res else None
 
-    async def save_timetable(self, id: int, mode: str, data: dict, s_date: date, e_date: date) -> None:
+    async def save_timetable(self, id: int, mode: str, data: dict,
+                             s_date: date, e_date: date) -> None:
         # Currently, there is no functionality to track deleted rows
         # from the API query result, so all are overwritten.
         self._conn.execute(delete(self._timetable)
