@@ -51,6 +51,13 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             markup.row(*days)
             markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
             markup.row('Змінити запит', 'на тиждень', 'Ввести дату')
+        case 'blocks':
+            data = await db.get_audience_blocks()
+            markup = await one_column_reply_keyboard(markup, data)
+        case 'room-type':
+            room_types = ['Лекційна', 'Практична', 'Лабораторія', "Комп'ютерний клас",
+                          'Спеціалізована', 'спорт', 'кафедра']
+            markup = await two_column_reply_keyboard(markup, room_types, True)
     return markup
 
 

@@ -392,6 +392,19 @@ class Database:
         res = self._conn.execute(stmt).first()
         return {'id': int(res[0]), 'name': res[1]}
 
+    async def get_audience_blocks(self) -> list:
+        stmt = select(self._audiences.c.block).distinct()
+        res = self._conn.execute(stmt).all()
+        return [r for r, in res]
+
+    async def get_block_overs(self, block: str) -> list | None:
+        stmt = (select(self._audiences.c.over)
+                .where(self._audiences.c.block == block)
+                .filter(self._audiences.c.over.isnot(None))
+                .order_by(self._audiences.c.over))
+        res = self._conn.execute(stmt).all()
+        return [r for r, in res] if res else None
+
     async def search(self, mode: str, query: str) -> list:
         """Searches for matches in the specified table of the database.
 

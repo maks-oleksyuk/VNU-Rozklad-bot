@@ -41,8 +41,5 @@ async def add_over_room(data: dict) -> dict:
     """
     for room in data:
         match = re.search(r'ауд\. [A-ZА-Я]-(\d)', room['name'])
-        if match:
-            room['over'] = int(match.group(1))
-        else:
-            room['over'] = 0
+        room['over'] = int(match.group(1)) if match else None
     return data

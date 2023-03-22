@@ -40,6 +40,8 @@ async def on_shutdown(dp: Dispatcher) -> None:
 
 
 if __name__ == '__main__':
+    from bot import commands, handlers
+
     executor.start_polling(
         dispatcher=dp,
         skip_updates=True,

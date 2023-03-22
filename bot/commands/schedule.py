@@ -92,3 +92,11 @@ async def set_date(message: types.Message) -> types.Message | None:
         await FSMSetDate.first()
     else:
         return await answer(message, 'no-ud-exist', 'choice')
+
+
+@dp.message_handler(commands=['rooms'])
+async def rooms(message: types.Message):
+    from ..states.rooms import FSMRooms
+    await db.insert_update_user(message)
+    await answer(message, 'set-date-for-rooms')
+    await FSMRooms.first()
