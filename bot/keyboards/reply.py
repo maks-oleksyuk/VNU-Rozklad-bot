@@ -3,6 +3,7 @@ from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
 
 from loader import db
+from data.storage import room_types
 
 
 async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboardMarkup:
@@ -51,13 +52,22 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             markup.row(*days)
             markup.row('⬅️ тиждень', 'сьогодні', 'тиждень ➡️')
             markup.row('Змінити запит', 'на тиждень', 'Ввести дату')
+        case 'rooms-date':
+            data = ['сьогодні', 'завтра']
+            markup = await two_column_reply_keyboard(markup, data, True)
+        case 'lessons':
+            data = ['1', '2', '3', '4', '5', '6', '7', '8']
+            markup.add(Kb(text='⬅️ Назад'))
+            markup.row(*data)
         case 'blocks':
             data = await db.get_audience_blocks()
-            markup = await one_column_reply_keyboard(markup, data)
+            markup = await one_column_reply_keyboard(markup, data, True)
+        case 'over':
+            data = await db.get_block_floors(message.text)
+            markup.add(Kb(text='⬅️ Назад'))
+            markup.row(*list(map(str, data)))
         case 'room-type':
-            room_types = ['Лекційна', 'Практична', 'Лабораторія', "Комп'ютерний клас",
-                          'Спеціалізована', 'спорт', 'кафедра']
-            markup = await two_column_reply_keyboard(markup, room_types, True)
+            markup = await two_column_reply_keyboard(markup, list(room_types.values()), True)
     return markup
 
 

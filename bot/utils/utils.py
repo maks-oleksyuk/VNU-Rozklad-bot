@@ -40,6 +40,9 @@ async def add_over_room(data: dict) -> dict:
         A dictionary containing updated room data with added over value.
     """
     for room in data:
-        match = re.search(r'ауд\. [A-ZА-Я]-(\d)', room['name'])
-        room['over'] = int(match.group(1)) if match else None
+        match = re.search(r'ауд\. [A-ZА-Я]-(\d{1,3})', room['name'])
+        room['floor'] = 1 \
+            if match and len(match.group(1)) == 1 \
+            else int(str(match.group(1))[0]) \
+            if match else None
     return data

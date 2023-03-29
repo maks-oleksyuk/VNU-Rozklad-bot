@@ -163,7 +163,7 @@ class Database:
                 Column('block', VARCHAR(128), nullable=False),
                 Column('room', VARCHAR(32), nullable=False),
                 Column('type', VARCHAR(8)),
-                Column('over', SMALLINT(unsigned=True)),
+                Column('floor', SMALLINT(unsigned=True)),
                 Column('places', SMALLINT(unsigned=True)),
             )
             self.log.info('The `audiences` table was not found, it has been created')
@@ -342,7 +342,7 @@ class Database:
         for i in data:
             stmt = (update(self._audiences)
                     .where(self._audiences.c.room == i['name'])
-                    .values(type=i['type'], over=i['over'], places=i['places']))
+                    .values(type=i['type'], floor=i['floor'], places=i['places']))
             self._conn.execute(stmt)
         self._conn.commit()
 
@@ -397,11 +397,21 @@ class Database:
         res = self._conn.execute(stmt).all()
         return [r for r, in res]
 
-    async def get_block_overs(self, block: str) -> list | None:
-        stmt = (select(self._audiences.c.over)
+    async def get_block_floors(self, block: str) -> list | None:
+        """Retrieve a list of unique floors for a given block.
+
+        Args:
+            block: The name of the block to retrieve floors for.
+
+        Returns:
+            list or None: A list of integers representing the floors for the
+            given block, or None if no floors
+        """
+        stmt = (select(self._audiences.c.floor)
                 .where(self._audiences.c.block == block)
-                .filter(self._audiences.c.over.isnot(None))
-                .order_by(self._audiences.c.over))
+                .filter(self._audiences.c.floor.isnot(None))
+                .group_by(self._audiences.c.floor)
+                .order_by(self._audiences.c.floor))
         res = self._conn.execute(stmt).all()
         return [r for r, in res] if res else None
 

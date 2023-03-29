@@ -98,5 +98,5 @@ async def set_date(message: types.Message) -> types.Message | None:
 async def rooms(message: types.Message):
     from ..states.rooms import FSMRooms
     await db.insert_update_user(message)
-    await answer(message, 'set-date-for-rooms')
+    await answer(message, 'set-date-for-rooms', 'rooms-date')
     await FSMRooms.first()
