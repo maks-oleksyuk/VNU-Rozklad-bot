@@ -3,7 +3,7 @@ from datetime import date
 from aiogram import Dispatcher, executor
 
 from data.config import ADMIN_ID
-from loader import api, bot, db, dp, logger, add_over_room
+from loader import api, bot, db, dp, logger, add_over_room, add_missing_type
 
 
 async def on_startup(dp: Dispatcher) -> None:
@@ -27,6 +27,7 @@ async def on_startup(dp: Dispatcher) -> None:
         additions_rooms_data = await api.get_free_rooms()
         if additions_rooms_data:
             additions_rooms_data = await add_over_room(additions_rooms_data)
+            additions_rooms_data = await add_missing_type(additions_rooms_data)
             await db.update_additions_to_audiences(additions_rooms_data)
 
     await bot.send_message(chat_id=ADMIN_ID, text='Bot started', disable_notification=True)

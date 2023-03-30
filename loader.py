@@ -7,7 +7,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from api import ScheduleAPI
 from data.config import BOT_TOKEN, DB_NAME, DB_USER, DB_PASS, DB_HOST, API_IP
 from db import Database
-from bot.utils import add_over_room
+from bot.utils import add_over_room, add_missing_type
 
 # Loading the logger configuration from a file.
 with open('logs/log_conf.yml', 'r') as f:

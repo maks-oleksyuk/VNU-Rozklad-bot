@@ -7,6 +7,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from loader import db, dp
 from ..utils import is_date
 from ..utils.messages import answer
+from data.storage import room_types
 
 
 class FSMRooms(StatesGroup):
@@ -93,4 +94,8 @@ async def process_type(message: types.Message, state: FSMContext) -> types.Messa
         else:
             await FSMRooms.block.set()
             return await answer(message, 'set-block-for-rooms', 'blocks')
-    await state.finish()
+    elif message.text in room_types.values():
+        await state.update_data(type=[k for k, v in room_types.items() if v == message.text])
+        await state.finish()
+    else:
+        return await answer(message, 'set-data-for-rooms-error')

@@ -46,3 +46,11 @@ async def add_over_room(data: dict) -> dict:
             else int(str(match.group(1))[0]) \
             if match else None
     return data
+
+
+async def add_missing_type(data: dict) -> dict:
+    for room in data:
+        match = re.search(r'ауд\. Сектор(\d)', room['name'])
+        if match:
+            room['type'] = 'спорт'
+    return data
