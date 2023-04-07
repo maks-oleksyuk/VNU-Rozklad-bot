@@ -192,3 +192,15 @@ async def has_need_group(txt):
             or txt.find('част. групи') != -1
             or txt.find('Збірна група') != -1
     ) else False
+
+
+async def formation_free_rooms(message: types.Message, ud: dict, data: list) -> types.Message:
+    if not data:
+        return await answer_text(message, '🔐 Аудиторій не знайдено 🤷', 'timetable')
+    date_str = ud['date'].strftime('на %d.%m.%Y')
+    header = f'Перелік вільних аудиторій' \
+             + f"\n{date_str} ({ud['lesson']} пара)" \
+             + f"\n{ud['block']} | {ud['floor']}п | {ud['type']}"
+    rooms_list = [f"{r['name']} - {r['places']} місць" for r in data]
+    message_text = md.quote(header + '\n'.join(rooms_list))
+    return await answer_text(message, message_text, 'timetable')

@@ -30,14 +30,14 @@ async def is_date(date_str):
         return False
 
 
-async def add_over_room(data: dict) -> dict:
-    """Extracts and adds over value to a given room data dictionary.
+async def add_room_floor(data: dict) -> dict:
+    """Extracts and adds floor value to a given room data dictionary.
 
     Args:
         data: A dictionary containing room data.
 
     Returns:
-        A dictionary containing updated room data with added over value.
+        A dictionary containing updated room data with added floor value.
     """
     for room in data:
         match = re.search(r'ауд\. [A-ZА-Я]-(\d{1,3})', room['name'])

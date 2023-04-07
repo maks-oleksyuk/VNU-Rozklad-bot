@@ -4,10 +4,11 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from loader import db, dp
-from ..utils import is_date
-from ..utils.messages import answer
 from data.storage import room_types
+from loader import api, db, dp
+from ..utils import add_room_floor, is_date
+from ..utils.messages import answer
+from ..utils.timetable import formation_free_rooms
 
 
 class FSMRooms(StatesGroup):
@@ -57,8 +58,8 @@ async def process_block(message: types.Message, state: FSMContext) -> types.Mess
         await FSMRooms.previous()
         return await answer(message, 'set-lesson-for-rooms', 'lessons')
     elif message.text in await db.get_audience_blocks():
+        await state.update_data(block=message.text)
         if await db.get_block_floors(message.text):
-            await state.update_data(block=message.text)
             await FSMRooms.next()
             return await answer(message, 'set-floor-for-rooms', 'over')
         else:
@@ -95,7 +96,13 @@ async def process_type(message: types.Message, state: FSMContext) -> types.Messa
             await FSMRooms.block.set()
             return await answer(message, 'set-block-for-rooms', 'blocks')
     elif message.text in room_types.values():
-        await state.update_data(type=[k for k, v in room_types.items() if v == message.text])
+        await state.update_data(type=[k for k, v in room_types.items() if v == message.text][0])
+        data = await state.get_data()
         await state.finish()
+        rooms = await api.get_free_rooms(data['date'], data['lesson'], data['block'], data['type'])
+        if rooms:
+            rooms = await add_room_floor(rooms)
+            rooms = list(filter(lambda x: x.get('floor') == data['floor'], rooms))
+        await formation_free_rooms(message, data, rooms)
     else:
         return await answer(message, 'set-data-for-rooms-error')

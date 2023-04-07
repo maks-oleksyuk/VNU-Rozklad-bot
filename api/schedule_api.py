@@ -1,5 +1,5 @@
-import json
 from datetime import date, timedelta
+from urllib.parse import urlencode
 
 import aiohttp
 
@@ -23,7 +23,7 @@ class ScheduleAPI:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self._api_url, params=payload) as res:
-                    text = json.loads(await res.text())
+                    text = await res.json()
                     code = text['psrozklad_export']['code']
                     if code == '0':
                         await self._db.save_groups(
@@ -46,7 +46,7 @@ class ScheduleAPI:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self._api_url, params=payload) as res:
-                    text = json.loads(await res.text())
+                    text = await res.json()
                     code = text['psrozklad_export']['code']
                     if code == '0':
                         await self._db.save_teachers(
@@ -75,7 +75,7 @@ class ScheduleAPI:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self._api_url, params=payload) as res:
-                    text = json.loads(await res.text())
+                    text = await res.json()
                     code = text['psrozklad_export']['code']
                     if code == '0':
                         return text['psrozklad_export']['blocks']
@@ -91,6 +91,21 @@ class ScheduleAPI:
                              lesson: int = -1,
                              block: str = '',
                              type: str = '') -> dict | None:
+        """Returns a list of free rooms for a given date, lesson, block and type.
+
+        Args:
+            date (optional): Date for which to get free rooms. Defaults to today.
+            lesson (optional): Lesson number for which to get free rooms. Defaults to -1.
+            block (optional): Block name for which to get free rooms. Defaults to ''.
+            type (optional): Type of room for which to get free rooms. Defaults to ''.
+
+        Returns:
+            dict or None: A dictionary containing free rooms information for a given
+            date, lesson, block and type or None if an error occurred.
+
+        Raises:
+            Exception: If the request returns a bad response code.
+        """
         payload = {
             'req_type': 'free_rooms_list',
             'rooms_date': date.strftime('%d.%m.%Y'),
@@ -98,18 +113,19 @@ class ScheduleAPI:
             'block_name': block,
             'room_type': type,
             'req_format': 'json',
-            'coding_mode': 'UTF8',
+            'coding_mode': 'windows-1251',
         }
+        # We change the encoding due to the peculiarities of the server.
+        payload = urlencode(payload, encoding='windows-1251')
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(self._api_url, params=payload) as res:
-                    text = json.loads(await res.text())
+                async with session.get(f'{self._api_url}?{payload}') as res:
+                    text = await res.json(encoding='windows-1251')
                     code = text['psrozklad_export']['code']
-                    if code == '0':
-                        return text['psrozklad_export']['free_rooms'][0]['rooms']
-                    else:
+                    if code != '0':
                         error = text['psrozklad_export']['error']['error_message']
                         raise Exception(f'Request return bad response code - {code}: {error}')
+                    return text['psrozklad_export']['free_rooms'][0]['rooms']
         except Exception as e:
             self.log.error(f'API Error: {e}')
             return None
@@ -140,7 +156,7 @@ class ScheduleAPI:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self._api_url, params=payload) as res:
-                    text = json.loads(await res.text())
+                    text = await res.json()
                     code = text['psrozklad_export']['code']
                     # If the answer is successful, we update the data in the database.
                     if code == '0':
