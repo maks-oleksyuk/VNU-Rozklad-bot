@@ -1,9 +1,10 @@
 from aiogram import types
 from aiogram.types import KeyboardButton as Kb
 from aiogram.types import ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardRemove
 
-from loader import db
 from data.storage import room_types
+from loader import db
 
 
 async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboardMarkup:
@@ -68,6 +69,8 @@ async def get_reply_keyboard_by_key(message: types.Message, key) -> ReplyKeyboar
             markup.row(*list(map(str, data)))
         case 'room-type':
             markup = await two_column_reply_keyboard(markup, list(room_types.values()), True)
+        case _:
+            markup = ReplyKeyboardRemove()
     return markup
 
 

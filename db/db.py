@@ -149,7 +149,7 @@ class Database:
                        comment='The lesson title.'),
                 Column('teacher', VARCHAR(64),
                        comment='The lesson teacher.'),
-                Column('group', VARCHAR(128),
+                Column('group', VARCHAR(255),
                        comment='The lesson group(s).'),
                 Column('replacement', VARCHAR(255)),
                 Column('reservation', VARCHAR(255)),

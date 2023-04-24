@@ -11,6 +11,8 @@ services:
       MYSQL_USER: $DB_USER
       MYSQL_PASSWORD: $DB_PASS
       MYSQL_DATABASE: $DB_NAME
+      MYSQL_ROOT_USER: $DB_ROOT_USER
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASS
     ports:
       - '1229:3306'
     volumes:

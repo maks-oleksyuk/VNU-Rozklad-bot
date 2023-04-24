@@ -1,6 +1,6 @@
 aiogram~=2.25.1
 aiohttp==3.8.4
 mariadb~=1.1.6
-SQLAlchemy~=2.0.9
+SQLAlchemy~=2.0.10
 PyYAML~=6.0
 colorlog~=6.7.0

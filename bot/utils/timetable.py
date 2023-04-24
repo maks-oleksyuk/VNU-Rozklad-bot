@@ -195,12 +195,13 @@ async def has_need_group(txt):
 
 
 async def formation_free_rooms(message: types.Message, ud: dict, data: list) -> types.Message:
+    markup_key = 'timetable' if await db.get_users_data_by_id(message.from_user.id) else None
     if not data:
-        return await answer_text(message, '🔐 Аудиторій не знайдено 🤷', 'timetable')
+        return await answer_text(message, '🔐 Аудиторій не знайдено 🤷', markup_key)
     date_str = ud['date'].strftime('на %d.%m.%Y')
     header = f'Перелік вільних аудиторій' \
              + f"\n{date_str} ({ud['lesson']} пара)" \
-             + f"\n{ud['block']} | {ud['floor']}п | {ud['type']}"
+             + f"\n{ud['block']} | {ud['floor']}п | {ud['type']}\n"
     rooms_list = [f"{r['name']} - {r['places']} місць" for r in data]
     message_text = md.quote(header + '\n'.join(rooms_list))
-    return await answer_text(message, message_text, 'timetable')
+    return await answer_text(message, message_text, markup_key)
