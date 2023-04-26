@@ -1,6 +1,6 @@
 include .env
 
-.PHONY: up down stop prune ps shell logs
+.PHONY: up down stop prune ps shell logs db-dump
 
 default: up
 
@@ -52,10 +52,15 @@ shell:
 
 ## logs	:	View containers logs.
 ##		You can optionally pass an argument with the service name to limit logs
-##		logs python	: View `python` container logs.
-##		logs nginx python	: View `nginx` and `python` containers logs.
+##		logs bot	: View `python` container logs.
+##		logs bot db	: View `python` and `database` containers logs.
 logs:
 	@docker compose logs -f $(filter-out $@,$(MAKECMDGOALS))
+
+## db-dump:	Dump database to db/dump.
+db-dump:
+	if [ ! -d "db/dump" ]; then mkdir "db/dump"; fi
+	@docker compose exec -t ${DB_HOST} mysqldump -u${DB_ROOT_USER} -p${DB_ROOT_PASS} ${DB_NAME} > db/dump/bot-db-dump_$(shell date +%F_%H:%M).sql
 
 # https://stackoverflow.com/a/6273809/1826109
 %:
