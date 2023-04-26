@@ -14,18 +14,10 @@ from sqlalchemy.dialects.mysql import (
 class Database:
     """A class for managing a database.
 
-    # TODO Update docblock when finish bot.v3
     Attributes:
         __engine: a SQLAlchemy engine object for connecting to a database.
         __meta: a SQLAlchemy metaData object for reflecting on database metadata.
         __inspector: a SQLAlchemy Inspector object for inspecting database objects.
-        _conn: a database connection object.
-
-    Methods:
-        __init__: a constructor method that initializes the database connection
-                  and reflects on database metadata.
-        _create_tables: a method that creates tables if they do not exist.
-        insert_update_user: inserts or updates a user record in the database.
     """
 
     def __init__(self, db_name: str, db_user: str, db_pass: str,
@@ -50,7 +42,6 @@ class Database:
         self.__meta = MetaData()
         self.__meta.reflect(bind=self.__engine)
         self.__inspector = inspect(self.__engine)
-        self._conn = self.__engine.connect()
 
         # Create database tables if they do not exist.
         self._create_tables()
@@ -180,7 +171,8 @@ class Database:
         """
         table = self.__meta.tables[name]
         stmt = select(func.count(table.c.id)).group_by(table.c.id)
-        return not self._conn.execute(stmt).scalar()
+        with self.__engine.connect() as conn:
+            return not conn.execute(stmt).scalar()
 
     async def insert_update_user(self, message: types.Message) -> None:
         """Inserts or updates a user record in the database.
@@ -188,17 +180,18 @@ class Database:
         Args:
             message: The message sent by the user.
         """
-        self._conn.execute(insert(self._users).values(
-            uid=message.from_user.id,
-            fullname=message.from_user.full_name,
-            username=message.from_user.username,
-        ).on_duplicate_key_update(
-            fullname=message.from_user.full_name,
-            username=message.from_user.username,
-            status=True,
-            login=text('default')
-        ))
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(insert(self._users).values(
+                uid=message.from_user.id,
+                fullname=message.from_user.full_name,
+                username=message.from_user.username,
+            ).on_duplicate_key_update(
+                fullname=message.from_user.full_name,
+                username=message.from_user.username,
+                status=True,
+                login=text('default')
+            ))
+            conn.commit()
         self.log.debug(f'User {message.from_user.full_name} - created/updated')
 
     async def save_user_data(self, message: types.Message,
@@ -223,8 +216,9 @@ class Database:
             d_name=res.get('name'),
             d_date=d_date
         )
-        self._conn.execute(stmt)
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(stmt)
+            conn.commit()
 
     async def get_users_data_by_id(self, uid: int) -> dict | None:
         """Get user data by user id.
@@ -236,8 +230,9 @@ class Database:
             A dictionary of user data, or None if the user is not found.
         """
         stmt = select(self._users_data).where(self._users_data.c.uid == uid)
-        res = self._conn.execute(stmt).first()
-        return res._asdict() if res else None
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).first()
+            return res._asdict() if res else None
 
     async def update_user_data_date(self, id: int, date: date) -> None:
         """Updates a user's data with a new date.
@@ -249,8 +244,9 @@ class Database:
         stmt = (update(self._users_data)
                 .values(d_date=date)
                 .where(self._users_data.c.uid == id))
-        self._conn.execute(stmt)
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(stmt)
+            conn.commit()
 
     async def save_groups(self, data: dict) -> None:
         """Saves groups data to the database.
@@ -258,10 +254,6 @@ class Database:
         Args:
             data: a dictionary containing groups data.
         """
-
-        # Delete existing data in the `groups` table.
-        self._conn.execute(self._groups.delete())
-
         query_data = []
         # Iterate through the data and add each group to the query data list.
         [(query_data.append({
@@ -270,9 +262,12 @@ class Database:
             'name': i['name'],
         })) for d in data for i in d['objects'] if i['ID'] != '']
 
+        # Delete existing data in the `groups` table, and
         # Insert the query data into the `groups` table and commit it.
-        self._conn.execute(insert(self._groups).values(query_data))
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(self._groups.delete())
+            conn.execute(insert(self._groups).values(query_data))
+            conn.commit()
 
         # Log a message indicating the `groups` table was successfully updated.
         self.log.info('Table `groups` updated successfully')
@@ -283,10 +278,6 @@ class Database:
         Args:
             data: a dictionary containing teachers data.
         """
-
-        # Delete existing data in the `teachers` table.
-        self._conn.execute(self._teachers.delete())
-
         query_data = []
         [(query_data.append({
             'id': i['ID'],
@@ -301,9 +292,12 @@ class Database:
             and i['name'].find('Вакансія') == -1
             and i['name'].find('0,75') == -1]
 
+        # Delete existing data in the `teachers` table, and
         # Insert the query data into the `teachers` table and commit it.
-        self._conn.execute(insert(self._teachers).values(query_data))
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(self._teachers.delete())
+            conn.execute(insert(self._teachers).values(query_data))
+            conn.commit()
 
         # Log a message indicating the `teachers` table was successfully updated.
         self.log.info('Table `teachers` updated successfully')
@@ -314,10 +308,6 @@ class Database:
         Args:
             data: a dictionary containing audiences data.
         """
-
-        # Delete existing data in the `audiences` table.
-        self._conn.execute(self._audiences.delete())
-
         query_data = []
         # Iterate through the data and add each group to the query data list.
         [(query_data.append({
@@ -326,9 +316,12 @@ class Database:
             'room': i['name'],
         })) for d in data for i in d['objects']]
 
+        # Delete existing data in the `audiences` table, and
         # Insert the query data into the `audiences` table and commit it.
-        self._conn.execute(insert(self._audiences).values(query_data))
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            conn.execute(self._audiences.delete())
+            conn.execute(insert(self._audiences).values(query_data))
+            conn.commit()
 
         # Log a message indicating the `audiences` table was successfully updated.
         self.log.info('Table `audiences` updated successfully')
@@ -339,12 +332,13 @@ class Database:
         Args:
             data: A dictionary of data containing the additional data to update.
         """
-        for i in data:
-            stmt = (update(self._audiences)
-                    .where(self._audiences.c.room == i['name'])
-                    .values(type=i['type'], floor=i['floor'], places=i['places']))
-            self._conn.execute(stmt)
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            for i in data:
+                stmt = (update(self._audiences)
+                        .where(self._audiences.c.room == i['name'])
+                        .values(type=i['type'], floor=i['floor'], places=i['places']))
+                conn.execute(stmt)
+            conn.commit()
 
     async def get_departments_by_mode(self, mode: str) -> list:
         """Gets a list of departments for a specific type ('groups' or 'teacher').
@@ -357,8 +351,9 @@ class Database:
         """
         table = self.__meta.tables[mode]
         stmt = select(table.c.department).distinct()
-        res = self._conn.execute(stmt).all()
-        return [r for r, in res]
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).all()
+            return [r for r, in res]
 
     async def get_objects_by_department(self, mode: str, department: str) -> list:
         """Retrieves all objects belong to a certain department from the database.
@@ -373,8 +368,9 @@ class Database:
         table = self.__meta.tables[mode]
         name = table.c.name if mode == 'groups' else table.c.fullname
         stmt = select(name).where(table.c.department == department).order_by(name)
-        res = self._conn.execute(stmt).all()
-        return [r for r, in res]
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).all()
+            return [r for r, in res]
 
     async def get_data_id_and_name(self, mode: str, query: str) -> dict:
         """Retrieves data id and name based on the given query string.
@@ -389,13 +385,15 @@ class Database:
         table = self.__meta.tables[mode]
         name = table.c.name if mode == 'groups' else table.c.fullname
         stmt = select(table.c.id, table.c.name).where(name == query)
-        res = self._conn.execute(stmt).first()
-        return {'id': int(res[0]), 'name': res[1]}
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).first()
+            return {'id': int(res[0]), 'name': res[1]}
 
     async def get_audience_blocks(self) -> list:
         stmt = select(self._audiences.c.block).distinct()
-        res = self._conn.execute(stmt).all()
-        return [r for r, in res]
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).all()
+            return [r for r, in res]
 
     async def get_block_floors(self, block: str) -> list | None:
         """Retrieve a list of unique floors for a given block.
@@ -412,8 +410,9 @@ class Database:
                 .filter(self._audiences.c.floor.isnot(None))
                 .group_by(self._audiences.c.floor)
                 .order_by(self._audiences.c.floor))
-        res = self._conn.execute(stmt).all()
-        return [r for r, in res] if res else None
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).all()
+            return [r for r, in res] if res else None
 
     async def search(self, mode: str, query: str) -> list:
         """Searches for matches in the specified table of the database.
@@ -428,50 +427,53 @@ class Database:
         table = self.__meta.tables[mode]
         name = table.c.name if mode == 'groups' else table.c.fullname
         stmt = select(name).filter(name.like(f'%{query}%')).order_by(name)
-        try:
-            if self._conn.execute(stmt).first()[0] == query:
-                return [query]
-            else:
-                res = self._conn.execute(stmt).all()
-                return [r for r, in res]
-        except TypeError:
-            return []
+        with self.__engine.connect() as conn:
+            try:
+                if conn.execute(stmt).first()[0] == query:
+                    return [query]
+                else:
+                    res = conn.execute(stmt).all()
+                    return [r for r, in res]
+            except TypeError:
+                return []
 
     async def get_teacher_full_name(self, name: str):
         stmt = select(self._teachers.c.fullname).where(func.instr(name, self._teachers.c.name))
-        res = self._conn.execute(stmt).first()
-        return res._asdict() if res else None
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).first()
+            return res._asdict() if res else None
 
     async def save_timetable(self, id: int, mode: str, data: dict,
                              s_date: date, e_date: date) -> None:
-        # Currently, there is no functionality to track deleted rows
-        # from the API query result, so all are overwritten.
-        self._conn.execute(delete(self._timetable)
-                           .where(self._timetable.c.id == id)
-                           .where(self._timetable.c.mode == mode)
-                           .where(self._timetable.c.date >= s_date)
-                           .where(self._timetable.c.date <= e_date))
-        for i in data:
-            # We look for matches in groups so as not to store unnecessary data.
-            # For example: general (Group, name, ...) to general.
-            g = i['group'].find('І (')
-            stmt = insert(self._timetable).values(
-                id=id,
-                mode=mode,
-                name=i['object'],
-                date=datetime.strptime(i['date'], '%d.%m.%Y').date(),
-                lesson_number=i['lesson_number'],
-                lesson_time=i['lesson_time'],
-                room=i['room'],
-                type=i['type'],
-                title=i['title'].replace(' (за професійним спрямуванням)', ''),
-                teacher=i['teacher'],
-                group=i['group'] if g == -1 else i['group'][:g + 1],
-                replacement=i['replacement'],
-                reservation=i['reservation'],
-            )
-            self._conn.execute(stmt)
-        self._conn.commit()
+        with self.__engine.connect() as conn:
+            # Currently, there is no functionality to track deleted rows
+            # from the API query result, so all are overwritten.
+            conn.execute(delete(self._timetable)
+                         .where(self._timetable.c.id == id)
+                         .where(self._timetable.c.mode == mode)
+                         .where(self._timetable.c.date >= s_date)
+                         .where(self._timetable.c.date <= e_date))
+            for i in data:
+                # We look for matches in groups so as not to store unnecessary data.
+                # For example: general (Group, name, ...) to general.
+                g = i['group'].find('І (')
+                stmt = insert(self._timetable).values(
+                    id=id,
+                    mode=mode,
+                    name=i['object'],
+                    date=datetime.strptime(i['date'], '%d.%m.%Y').date(),
+                    lesson_number=i['lesson_number'],
+                    lesson_time=i['lesson_time'],
+                    room=i['room'],
+                    type=i['type'],
+                    title=i['title'].replace(' (за професійним спрямуванням)', ''),
+                    teacher=i['teacher'],
+                    group=i['group'] if g == -1 else i['group'][:g + 1],
+                    replacement=i['replacement'],
+                    reservation=i['reservation'],
+                )
+                conn.execute(stmt)
+            conn.commit()
 
     async def get_timetable(self, id: int, mode: str,
                             s_date: date = date.today(),
@@ -494,10 +496,10 @@ class Database:
                 .where(self._timetable.c.mode == mode)
                 .where(self._timetable.c.date >= s_date)
                 .where(self._timetable.c.date <= e_date))
-        res = self._conn.execute(stmt).all()
-        return [r._asdict() for r in res]
+        with self.__engine.connect() as conn:
+            res = conn.execute(stmt).all()
+            return [r._asdict() for r in res]
 
     async def _close(self) -> None:
         """Close the connection with the database"""
-        self._conn.close()
         self.__engine.dispose()
