@@ -35,7 +35,10 @@ class Database:
 
         # Create database engine with provided parameters.
         self.__engine = create_engine(
-            f'mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
+            f'mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}',
+            pool_pre_ping=True,
+            pool_recycle=3600,
+            pool_size=20,
         )
 
         # Initialize metadata and inspector objects.
