@@ -15,17 +15,17 @@ async def on_startup(dp: Dispatcher) -> None:
     today = date.today()
     # Update the tables on the 1st day of each month, or if they are missing data.
     if await db._table_is_empty('groups') or today.day == 1:
-        await api.get_groups()
+        if groups := await api.get_departments('group'):
+            await db.save_groups(groups)
     if await db._table_is_empty('teachers') or today.day == 1:
-        await api.get_teachers()
+        if teachers := await api.get_departments('teacher'):
+            await db.save_teachers(teachers)
 
     if await db._table_is_empty('audiences') or today.day == 1:
-        rooms = await api.get_audiences()
-        if rooms:
+        if rooms := await api.get_audiences():
             await db.save_audiences(rooms)
 
-        additions_rooms_data = await api.get_free_rooms()
-        if additions_rooms_data:
+        if additions_rooms_data := await api.get_free_rooms():
             additions_rooms_data = await add_room_floor(additions_rooms_data)
             additions_rooms_data = await add_missing_type(additions_rooms_data)
             await db.update_additions_to_audiences(additions_rooms_data)

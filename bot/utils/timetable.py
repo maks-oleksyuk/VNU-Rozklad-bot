@@ -31,8 +31,7 @@ async def timetable_for_week(message: types.Message, date: date):
 
 
 async def change_week_day(message: types.Message):
-    ud = await db.get_users_data_by_id(message.from_user.id)
-    if ud:
+    if ud := await db.get_users_data_by_id(message.from_user.id):
         if message.text == '🟢':
             await timetable_for_date(message, ud['d_date'])
         else:
@@ -47,8 +46,7 @@ async def change_week_day(message: types.Message):
 
 
 async def change_week(message: types.Message, side: str):
-    ud = await db.get_users_data_by_id(message.from_user.id)
-    if ud:
+    if ud := await db.get_users_data_by_id(message.from_user.id):
         date = ud['d_date'] + timedelta(weeks=1 if side == 'next' else -1)
         await db.update_user_data_date(message.from_user.id, date)
         await timetable_for_date(message, date)

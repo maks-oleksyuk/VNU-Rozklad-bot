@@ -40,8 +40,7 @@ async def set_date(message: types.Message, state: FSMContext) -> types.Message:
         types.Message: A message with the schedule for the new date,
             or an error message if the user entered an invalid date.
     """
-    new_date = await is_date(message.text)
-    if new_date:
+    if new_date := await is_date(message.text):
         await state.finish()
         await db.update_user_data_date(message.from_user.id, new_date)
         return await timetable_for_date(message, new_date)

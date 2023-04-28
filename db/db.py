@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from aiogram import types
 from sqlalchemy import (
@@ -326,8 +326,7 @@ class Database:
             conn.execute(insert(self._audiences).values(query_data))
             conn.commit()
 
-        # Log a message indicating the `audiences` table was successfully updated.
-        self.log.info('Table `audiences` updated successfully')
+        self.log.info('The `audiences` table has been successfully updated ')
 
     async def update_additions_to_audiences(self, data: dict) -> None:
         """Update additional data of audiences in the database.
@@ -342,6 +341,8 @@ class Database:
                         .values(type=i['type'], floor=i['floor'], places=i['places']))
                 conn.execute(stmt)
             conn.commit()
+
+        self.log.info('The `audiences` table has been successfully updated with additional data')
 
     async def get_departments_by_mode(self, mode: str) -> list:
         """Gets a list of departments for a specific type ('groups' or 'teacher').
@@ -493,7 +494,8 @@ class Database:
             list: List of timetable data matching the query.
         """
         from loader import api
-        await api.get_schedule(id, mode, s_date)
+        if schedule := await api.get_schedule(id, mode, s_date):
+            await self.save_timetable(id, mode, schedule, s_date, s_date + timedelta(weeks=2))
         stmt = (select(self._timetable.c)
                 .where(self._timetable.c.id == id)
                 .where(self._timetable.c.mode == mode)

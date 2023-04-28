@@ -50,7 +50,6 @@ async def add_room_floor(data: dict) -> dict:
 
 async def add_missing_type(data: dict) -> dict:
     for room in data:
-        match = re.search(r'ауд\. Сектор(\d)', room['name'])
-        if match:
+        if re.search(r'ауд\. Сектор(\d)', room['name']):
             room['type'] = 'спорт'
     return data
