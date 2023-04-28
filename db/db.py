@@ -37,7 +37,7 @@ class Database:
         self.__engine = create_engine(
             f'mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}',
             pool_pre_ping=True,
-            pool_recycle=3600,
+            pool_recycle=21600,
             pool_size=20,
         )
 
@@ -135,7 +135,7 @@ class Database:
                        comment='The lesson number.'),
                 Column('lesson_time', VARCHAR(16), nullable=False,
                        comment='The lesson time.'),
-                Column('room', VARCHAR(16),
+                Column('room', VARCHAR(32),
                        comment='The lesson room.'),
                 Column('type', VARCHAR(8), nullable=False,
                        comment='The lesson type.'),
