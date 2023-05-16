@@ -59,7 +59,7 @@ logs:
 
 ## db-dump:	Dump database to db/dump.
 db-dump:
-	if [ ! -d "db/dump" ]; then mkdir "db/dump"; fi
+	if [ ! -d "db-dump" ]; then mkdir "db-dump"; fi
 	@docker compose exec -t ${DB_HOST} mysqldump -u${DB_ROOT_USER} -p${DB_ROOT_PASS} ${DB_NAME} > db/dump/bot-db-dump_$(shell date +%F_%H:%M).sql
 
 # https://stackoverflow.com/a/6273809/1826109

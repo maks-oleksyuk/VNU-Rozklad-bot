@@ -24,7 +24,7 @@ async def process_date(message: types.Message, state: FSMContext) -> types.Messa
     user_date = ''
     if message.text == '⬅️ Назад':
         from ..commands.default import cmd_cancel
-        await cmd_cancel(message, state)
+        return await cmd_cancel(message, state)
     elif message.text == 'сьогодні':
         user_date = date.today()
     elif message.text == 'завтра':

@@ -11,23 +11,23 @@ variables. Below are instructions on how to do this:
 1. Clone the repository to your local computer:
 
     ```sh
-    $ git clone https://github.com/maks-oleksyuk/VNU-Rozklad-bot.git
+    git clone https://github.com/maks-oleksyuk/VNU-Rozklad-bot.git
     ```
 
 2. Create an `.env` file in the root directory of the project
-   and fill it according to the example specified in the `example.env` file
+   and fill it according to the example specified in the `.env.example` file
 
     ```dotenv
     TOKEN=your_bot_token
     ADMIN_ID=1234567
     API_IP=0.0.0.0
-    # and other, see example.env
+    # and other, see .env.example
     ```
 3. If all the variables are configured correctly, you can run the bot on Docker.
    To do this, you can execute the following commands.
 
     ```sh
-    $ make build; make up
+    make up
     ```
 
 4. Import mariadb database. In order to import an existing database,
@@ -37,7 +37,7 @@ variables. Below are instructions on how to do this:
 5. More detailed information can be obtained with the following command:
 
    ```sh
-   $ make help
+   make help
    ```
 
 ## Commands

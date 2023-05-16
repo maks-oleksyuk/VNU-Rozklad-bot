@@ -12,5 +12,5 @@ DB_PASS = getenv('DB_PASS', default='')
 DB_NAME = getenv('DB_NAME', default='')
 DB_HOST = getenv('DB_HOST', default='')
 
-# Api ip address.
+# API IP address.
 API_IP = getenv('API_IP', default='')
