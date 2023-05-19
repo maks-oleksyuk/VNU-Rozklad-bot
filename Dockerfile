@@ -4,21 +4,27 @@ ARG PYTHON_TAG
 
 FROM python:${PYTHON_TAG}
 
-RUN apt-get update && apt-get install -y gcc curl wget
+# Update and install the required packages.
+RUN apt update && apt install -y gcc curl wget locales
+
+# Download the installer for mariadb and run it.
 RUN wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
-RUN chmod +x mariadb_repo_setup
-RUN ./mariadb_repo_setup \ --mariadb-server-version='mariadb-10.6'
-RUN apt install -y --no-install-recommends libmariadb3 libmariadb-dev locales
+RUN chmod +x mariadb_repo_setup && ./mariadb_repo_setup
+# Installing additional packages to fix bugs.
+RUN apt install -y --no-install-recommends libmariadb3 libmariadb-dev
 
-RUN rm -rf /var/lib/apt/lists/*; sed -i '/^#.* uk_UA.UTF-8 /s/^#//' /etc/locale.gen; locale-gen
+# Enable settings for Ukrainian localization.
+RUN sed -i '/^#.* uk_UA.UTF-8 /s/^#//' /etc/locale.gen && locale-gen
 
+# Update pip.
 RUN pip install --upgrade pip
 
+# Installing the python dependencies.
 COPY requirements.txt /tmp/
-RUN pip install -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r  /tmp/requirements.txt && rm /tmp/requirements.txt
 
-COPY . .
+COPY . /usr/src/app
 
-WORKDIR .
+WORKDIR /usr/src/app
 
 CMD python -m app

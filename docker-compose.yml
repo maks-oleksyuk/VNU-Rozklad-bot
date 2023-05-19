@@ -26,6 +26,7 @@ services:
     container_name: '${PROJECT_NAME}_bot'
     restart: always
     environment:
+      TZ: 'Europe/Kiev'
       API_IP: $API_IP
       DB_NAME: $DB_NAME
       DB_USER: $DB_USER
@@ -34,6 +35,7 @@ services:
       ADMIN_ID: $ADMIN_ID
       BOT_TOKEN: $BOT_TOKEN
     volumes:
+      - ./logs:/usr/src/app/logs
       - ./:/usr/src/app:cached
     depends_on:
       - db
