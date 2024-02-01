@@ -1,5 +1,5 @@
 aiogram~=2.25.1
-aiohttp~=3.8.4
+aiohttp~=3.9.3
 mariadb~=1.1.6
 SQLAlchemy~=2.0.16
 PyYAML~=6.0
